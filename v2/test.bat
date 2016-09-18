@@ -8,6 +8,7 @@
 %1\applewin -log -load-state %~dp0\arkanoid.aws.yaml
 %1\applewin -log -load-state "%~dp0\AS-S1_Turn the disk over.aws.yaml"
 %1\applewin -log -load-state "%~dp0\AS-S2_End credits.aws.yaml"
+%1\applewin -log -load-state %~dp0\AZTEC.aws.yaml
 %1\applewin -log -load-state %~dp0\CPM2.2(56k)-1.aws.yaml
 %1\applewin -log -load-state %~dp0\CPM2.2(56k)-2-mbasic.aws.yaml
 %1\applewin -log -load-state %~dp0\Cybernoid.aws.yaml
