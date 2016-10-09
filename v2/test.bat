@@ -5,6 +5,8 @@
 %1\applewin -log -load-state %~dp0\A2+.aws.yaml
 %1\applewin -log -load-state %~dp0\A2e.aws.yaml
 %1\applewin -log -load-state %~dp0\A2e-enhanced.aws.yaml
+%1\applewin -log -load-state %~dp0\A2+-VideoModeSwitch.aws.yaml
+%1\applewin -log -load-state %~dp0\A2e-enhanced-VideoModeSwitch.aws.yaml
 %1\applewin -log -load-state %~dp0\arkanoid.aws.yaml
 %1\applewin -log -load-state "%~dp0\AS-S1_Turn the disk over.aws.yaml"
 %1\applewin -log -load-state "%~dp0\AS-S2_End credits.aws.yaml"
