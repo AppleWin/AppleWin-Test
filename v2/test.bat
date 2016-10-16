@@ -18,6 +18,7 @@
 %1\applewin -log -load-state %~dp0\Cybernoid-TimerAtC480.aws.yaml
 %1\applewin -log -load-state %~dp0\dazzledraw1.aws.yaml
 %1\applewin -log -load-state %~dp0\FANTAVISION.aws.yaml
+%1\applewin -log -load-state %~dp0\HDD-32MB.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-fugue.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-speech.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-tone.aws.yaml
@@ -26,6 +27,7 @@
 %1\applewin -log -load-state %~dp0\Pravets8M.aws.yaml
 %1\applewin -log -load-state "%~dp0\Prince of Persia.aws.yaml"
 %1\applewin -log -load-state %~dp0\RamWorks_r4.aws.yaml
+%1\applewin -log -load-state %~dp0\Tests-Various.aws.yaml
 @ECHO Done v2 tests
 @GOTO end
 

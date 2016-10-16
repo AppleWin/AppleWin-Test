@@ -1,0 +1,109 @@
+Index of all the save-state tests:
+==================================
+
+v2: Info about each test:
+-------------------------
+
+archon_i.aws.yaml:
+. Archon title screen, snapshot mid-tune (speaker)
+
+A2.aws.yaml
+. Apple][
+
+A2+.aws.yaml
+. Apple][+
+
+A2e.aws.yaml
+. Apple//e
+
+A2e-enhanced.aws.yaml
+. Enhanced Apple//e
+
+A2+-VideoModeSwitch.aws.yaml
+. Apple][+: Horizontal HGR/TEXT split
+. Minimal .aws.yaml file
+
+A2e-enhanced-VideoModeSwitch.aws.yaml
+. Enhanced Apple//e: Horizontal HGR/TEXT split
+. Minimal .aws.yaml file
+
+arkanoid.aws.yaml
+. Test: mouse
+
+AS-S1_Turn the disk over.aws.yaml
+. Vertical DLORES/TEXT80 split
+
+AS-S2_End credits.aws.yaml
+. Horizontal DLORES/TEXT80 split
+
+AZTEC.aws.yaml
+. GH#347: Test speed of Aztec loading until "PRESS ANY KEY" message
+. Check AppleWin.log for: (~2500ms for Win7-64, AMD Phenom II dual-core @3GHz)
+	"Time from emulation reboot until first $C000 access: 2559 msec"
+. NB. Repeatedly reboot (F2) to get more timings
+
+CPM2.2(56k)-1.aws.yaml
+. CPM card: dir
+
+CPM2.2(56k)-2-mbasic.aws.yaml
+. CPM card: run
+
+Cybernoid.aws.yaml
+. Mockingboard, mid-tune
+
+Cybernoid2-Phasor.aws.yaml
+. Phasor, mid-tune
+
+Cybernoid-TimerAtC480.aws.yaml
+. GH#309: Mockingboard, mid-tune using 6522 at $C480 for Timer1 interrupt
+
+dazzledraw1.aws.yaml
+. Test: mouse
+
+FANTAVISION.aws.yaml
+. Test: mouse
+
+HDD-32MB.aws.yaml
+. GH#348: Test HDD image >800KiB
+
+phasor-fugue.aws.yaml
+. Phasor, mid-tune
+
+phasor-speech.aws.yaml
+. Select 1 for "Dr Fay Zor" speech
+
+phasor-tone.aws.yaml
+. Phasor, mid-tone (ie. no more changes to AY regs occur after loading snapshot)
+
+Pravets82.aws.yaml
+. Pravets82
+
+Pravets8A.aws.yaml
+. Pravets8A
+
+Pravets8M.aws.yaml
+. Pravets8M
+
+Prince of Persia.aws.yaml
+. Test 800KiB 3.5" image
+
+RamWorks_r4.aws.yaml
+. Test RamWorks card
+. NB. Need to improve this to verify that the memory in all aux banks has been correctly restored
+
+Tests-Various.aws.yaml
+. GH#341: Color Monitor mode are shifted one HGR pixel to the right (losing the rightmost pixel)
+. GH#352: Full-speed in mixed mode results in flickery video
+. GH#356: PrintScreen from Color TV or B&W TV video modes is missing top line
+. Minimal .aws.yaml file (just wrapper around .dsk)
+
+=================================================
+
+v1: Info about each test:
+-------------------------
+
+Boulderdash1-level-L1-bonus.aws
+. Test loading of old .aws snapshot (64K)
+
+Maniac Mansion(entrance-hall-near-clock).aws"
+. Test loading of old .aws snapshot (128K)
