@@ -29,6 +29,7 @@
 %1\applewin -log -load-state "%~dp0\Prince of Persia.aws.yaml"
 %1\applewin -log -load-state %~dp0\RamWorks_r4.aws.yaml
 %1\applewin -log -load-state %~dp0\Tests-Various.aws.yaml
+%1\applewin -log -load-state %~dp0\TK3000e.aws.yaml
 @ECHO Done v2 tests
 @GOTO end
 

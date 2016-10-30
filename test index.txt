@@ -100,6 +100,9 @@ Tests-Various.aws.yaml
 . GH#356: PrintScreen from Color TV or B&W TV video modes is missing top line
 . Minimal .aws.yaml file (just wrapper around .dsk)
 
+TK3000e.aws.yaml
+. TK3000 //e
+
 =================================================
 
 v1: Info about each test:
