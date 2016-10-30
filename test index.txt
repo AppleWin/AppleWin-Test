@@ -48,6 +48,9 @@ CPM2.2(56k)-1.aws.yaml
 CPM2.2(56k)-2-mbasic.aws.yaml
 . CPM card: run
 
+CPM2.2(56k)-3-GR-A2+.aws.yaml
+. GH#371: Z80 updating video in units of ~1000 cycles. Test for mixed GR/TEXT video.
+
 Cybernoid.aws.yaml
 . Mockingboard, mid-tune
 

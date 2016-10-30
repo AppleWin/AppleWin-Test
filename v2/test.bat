@@ -13,6 +13,7 @@
 %1\applewin -log -load-state %~dp0\AZTEC.aws.yaml
 %1\applewin -log -load-state %~dp0\CPM2.2(56k)-1.aws.yaml
 %1\applewin -log -load-state %~dp0\CPM2.2(56k)-2-mbasic.aws.yaml
+%1\applewin -log -load-state %~dp0\CPM2.2(56k)-3-GR-A2+.aws.yaml
 %1\applewin -log -load-state %~dp0\Cybernoid.aws.yaml
 %1\applewin -log -load-state %~dp0\Cybernoid2-Phasor.aws.yaml
 %1\applewin -log -load-state %~dp0\Cybernoid-TimerAtC480.aws.yaml
