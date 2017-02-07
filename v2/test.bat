@@ -5,6 +5,9 @@
 %1\applewin -log -load-state %~dp0\A2+.aws.yaml
 %1\applewin -log -load-state %~dp0\A2e.aws.yaml
 %1\applewin -log -load-state %~dp0\A2e-enhanced.aws.yaml
+%1\applewin -log -load-state "%~dp0\A2e-internal-C4nn-with-mousecard-(self test).aws.yaml"
+%1\applewin -log -load-state %~dp0\dazzledraw1-mouse-rom-page0.aws.yaml
+%1\applewin -log -load-state %~dp0\dazzledraw1-mouse-rom-page6.aws.yaml
 %1\applewin -log -load-state %~dp0\A2+-VideoModeSwitch.aws.yaml
 %1\applewin -log -load-state %~dp0\A2e-enhanced-VideoModeSwitch.aws.yaml
 %1\applewin -log -load-state %~dp0\arkanoid.aws.yaml

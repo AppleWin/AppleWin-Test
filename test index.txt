@@ -19,6 +19,12 @@ A2e.aws.yaml
 A2e-enhanced.aws.yaml
 . Enhanced Apple//e
 
+A2e-internal-C4nn-with-mousecard-(self test).aws.yaml
+. GH#381: Test when internal ROM is enabled at $C400, mouse-card is inserted and PC is in range [$C400..FF]
+dazzledraw1-mouse-rom-page0.aws.yaml
+dazzledraw1-mouse-rom-page6.aws.yaml
+. GH#381: Test when external ROM is enabled (mouse-card ROM) at $C400, and when PC is in range [$C400..FF]
+
 A2+-VideoModeSwitch.aws.yaml
 . Apple][+: Horizontal HGR/TEXT split
 . Minimal .aws.yaml file
