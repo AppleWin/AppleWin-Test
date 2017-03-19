@@ -110,6 +110,11 @@ Tests-Various.aws.yaml
 TK3000e.aws.yaml
 . TK3000 //e
 
+Gemstone Warrior.aws.yaml
+. Allow game to boot to title screen, to test:
+  . GH#389: Test that disk's write-protect status can be read with drive off
+  . GH#395: Test that LC write-enabled state is maintained after STA $C083
+
 =================================================
 
 v1: Info about each test:
