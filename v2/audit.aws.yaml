@@ -1,0 +1,139 @@
+# Date-stamp: Sun May 21 15:46:03 2017
+
+---
+File_hdr:
+  Tag: AppleWin Save State
+  Version: 2
+
+Unit:
+  Type: Apple2
+  Version: 1
+  State:
+    Model: Enhanced Apple//e
+    CPU:
+      Type: 65C02
+      A: 0xFF
+      X: 0xFF
+      Y: 0xFF
+      P: 0xF7
+      S: 0xFC
+      PC: 0xFA62
+      Cumulative Cycles: 0x0000000000000000
+    Joystick:
+      Counter Reset Cycle: 0x0000000000000000
+      Joystick0 TrimX: 0
+      Joystick0 TrimY: 0
+      Joystick1 TrimX: 0 # not implemented yet
+      Joystick1 TrimY: 0 # not implemented yet
+    Keyboard:
+      Last Key: 0x00
+    Speaker:
+      Last Cycle: 0x0000000000000000
+    Video:
+      Alt Char Set: false
+      Video Mode: 0x00000040
+      Cycles This Frame: 0
+    Memory:
+      Memory Mode: 0x00000610
+      Last RAM Write: 0
+      IO_SELECT: 0x00
+      IO_SELECT_InternalROM: 0x00
+      Expansion ROM Type: 0
+      Peripheral ROM Slot: 0
+    Main Memory:
+      0000: 00
+
+Unit:
+  Type: Auxiliary Slot
+  Version: 1
+  State:
+    Card: Extended 80 Column
+    Num Aux Banks: 01   # [0,1..7F] 0=no aux mem, 1=128K system, etc
+    Active Aux Bank: 00 # [  0..7E] 0=memaux
+    Auxiliary Memory Bank00:
+      0000: 00
+
+Unit:
+  Type: Slots
+  Version: 1
+  State:
+    1:
+      Card: Generic Printer
+      Version: 1
+      State:
+        Inactivity: 0
+        Printer Idle Limit: 10
+        Print Filename: F:\Apple][\AppleWin\Printer.txt
+        Is File Open: false
+        Dump To Printer: false
+        Convert Encoding: true
+        Filter Unprintable: true
+        Printer Append: false
+        Enable Dump To Real Printer: false
+    2:
+      Card: Super Serial Card
+      Version: 1
+      State:
+        DIPSW Default:
+          Baud Rate: 19200
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: true
+          Interrupts: false
+        DIPSW Current:
+          Baud Rate: 19200
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: true
+          Interrupts: false
+        Baud Rate: 19200
+        Stop Bits: 0
+        Byte Size: 8
+        Parity: 0
+        Control Byte: 0x1F
+        Command Byte: 0x00
+        Comm Inactivity: 0
+        TX IRQ Enabled: false
+        RX IRQ Enabled: false
+        TX IRQ Pending: false
+        RX IRQ Pending: false
+        Written TX: false
+        Serial Port Name: ""
+    6:
+      Card: Disk][
+      Version: 1
+      State:
+        Phases: 0x0
+        Current Drive: 0
+        Disk Accessed: false
+        Enhance Disk: true
+        Floppy Latch: 0x00
+        Floppy Motor On: false
+        Floppy Write Mode: false
+        Unit0:
+          Filename: audit.dsk
+          Track: 0
+          Phase: 0
+          Byte: 0x0000
+          Write Protected: false
+          Spinning: 0
+          Write Light: 0
+          Nibbles: 0x0000
+          Track Image Data: 0
+          Track Image Dirty: 0
+        Unit1:
+          Filename: ""
+          Track: 0
+          Phase: 0
+          Byte: 0x0000
+          Write Protected: false
+          Spinning: 0
+          Write Light: 0
+          Nibbles: 0x0000
+          Track Image Data: 0
+          Track Image Dirty: 0
+...

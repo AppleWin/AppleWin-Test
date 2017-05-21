@@ -4,6 +4,10 @@ Index of all the save-state tests:
 v2: Info about each test:
 -------------------------
 
+audit.aws.yaml:
+. https://github.com/zellyn/a2audit 1.04
+. Test LC, internal ROM soft switches, etc
+
 archon_i.aws.yaml:
 . Archon title screen, snapshot mid-tune (speaker)
 
@@ -115,6 +119,11 @@ Gemstone Warrior.aws.yaml
   . GH#389: Test that disk's write-protect status can be read with drive off
   . GH#395: Test that LC write-enabled state is maintained after STA $C083
 
+NoSlotClockTest.aws.yaml
+. Test NSC
+. Code is in the middle of reading date/time from NSC
+. NB. Use ProDOS command "- NS.CLOCK.UTILS"
+  
 =================================================
 
 v1: Info about each test:
