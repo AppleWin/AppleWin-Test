@@ -1,6 +1,7 @@
 @IF "%~1" == "" GOTO help
 
 %1\applewin -log -load-state %~dp0\audit.aws.yaml
+%1\applewin -log -load-state %~dp0\LC-RamWrite-Test.aws.yaml
 %1\applewin -log -load-state %~dp0\archon_i.aws.yaml
 %1\applewin -log -load-state %~dp0\A2.aws.yaml
 %1\applewin -log -load-state %~dp0\A2+.aws.yaml

@@ -8,6 +8,10 @@ audit.aws.yaml:
 . https://github.com/zellyn/a2audit 1.04
 . Test LC, internal ROM soft switches, etc
 
+LC-RAMWrite-Test.aws.yaml:
+. Test save-state being in the middle of 2x LDA $C083 (to write enable LC Bank2 RAM)
+. Success is an "OK" message, otherwise crash to the monitor
+
 archon_i.aws.yaml:
 . Archon title screen, snapshot mid-tune (speaker)
 
