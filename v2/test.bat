@@ -37,6 +37,7 @@
 %1\applewin -log -load-state %~dp0\TK3000e.aws.yaml
 %1\applewin -log -load-state "%~dp0\Gemstone Warrior.aws.yaml"
 %1\applewin -log -load-state %~dp0\NoSlotClockTest.aws.yaml
+%1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 @ECHO Done v2 tests
 @GOTO end
 

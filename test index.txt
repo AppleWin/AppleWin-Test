@@ -127,7 +127,12 @@ NoSlotClockTest.aws.yaml
 . Test NSC
 . Code is in the middle of reading date/time from NSC
 . NB. Use ProDOS command "- NS.CLOCK.UTILS"
-  
+
+SSC-TCP-IN#2.aws.yaml
+. GH#486:
+	- Test that SSC's expansion ROM is loaded - PC it in expansion ROM space.
+	- Test TCP-serial input. Eg. Using Putty (IP=127.0.0.1; Port=1977; Connection type=Raw)
+
 =================================================
 
 v1: Info about each test:
