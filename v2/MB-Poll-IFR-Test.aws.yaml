@@ -1,0 +1,430 @@
+# Date-stamp: Sat Oct 21 18:04:28 2017
+
+---
+File_hdr:
+  Tag: AppleWin Save State
+  Version: 2
+
+Unit:
+  Type: Apple2
+  Version: 1
+  State:
+    Model: Enhanced Apple//e
+    CPU:
+      Type: 65C02
+      A: 0x01
+      X: 0x00
+      Y: 0x00
+      P: 0x30
+      S: 0xF4
+      PC: 0x0312
+      Cumulative Cycles: 0x000000001F4916B2
+    Joystick:
+      Counter Reset Cycle: 0x0000000000000000
+      Joystick0 TrimX: 0
+      Joystick0 TrimY: 0
+      Joystick1 TrimX: 0 # not implemented yet
+      Joystick1 TrimY: 0 # not implemented yet
+    Keyboard:
+      Last Key: 0x00
+    Speaker:
+      Last Cycle: 0x000000001F4916B2
+    Video:
+      Alt Char Set: false
+      Video Mode: 0x00000040
+      Cycles This Frame: 2004
+    Memory:
+      Memory Mode: 0x00000610
+      Last RAM Write: 0
+      IO_SELECT: 0x00
+      IO_SELECT_InternalROM: 0x00
+      Expansion ROM Type: 0
+      Peripheral ROM Slot: 0
+    Main Memory:
+      0000: 4C3CD44C3ADB0000FFFF4C99E1FF006BFF00000400FF7F00FFFF0000FFFF00000028001800170008D007D0070000E801FF00FFAA0428F0FD1BFD000300030003
+      0040: 00030000FFFF000000FF0000FFFF4B3469FF550000FF0000FFFF0000FFFF38DEFFFF0000FFFF00010803080308030800C0FF0000C0FFFF00FFFF0000FF000800
+      0080: FFFF0000FFFF00FFFF000000FFFF00034CFF0000FFFF0000FF0000000088FFFFFF69FF0000D0D101000000000009000308E6B8D002E6B9AD0502C93AB00AC920
+      00C0: F0EF38E93038E9D060804FC752FF0000FFFF0000FFFF00007FFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FF010000FFFF0000FFFF0000FFFF0000
+      0100: FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000
+      0140: FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000
+      0180: FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000
+      01C0: FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FF65EBD81705CE1753FC5317051705CE1705CE09C23500BBFE84FF22D8C1F10001010000
+      0200: B3B0B0C78DC1B9A0B8C6A0B8C4A0B0B0A0B0B4A0C1B9A0B8C2A0B8C4A0B0B1A0B0B4A0C4B0A0C6C58DB1A0C3B0A0C6C6A0C4B0A0C5C4A0C1C4A0B0C4A0C3B4A0
+      0240: B2B9A0B4B0A0C4B0A0C5B6A0B6B08D8DFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF000063690000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000
+      0280: FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000
+      02C0: FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000
+      0300: 4C0003A9008D0BC4A9008D04C4A9018D05C4A200AD0DC42940D004E8D0F600AD04C4AC05C4E014D0F5C9EDD0F1C0FFD0EDAD0DC42940D0E6A98F8D0004A98B8D
+      0340: 0104D0FEFFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000000100000203000405060000FFFF000007080000
+      0380: FF090A0B0C0D00000E0F10111213001415161718191A0000FFFF0000FFFF0000FF1B001C1D1E0000FF1F0000202100222324252627280000FFFF00292A2B002C
+      03C0: 2D2E2F303132000033343536373800393A3B3C3D3E3F0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF0000FFFF000059FA03E045FF0000FFFF0000FFFF0000
+      0400: A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0B0B3B0C6ADA0A0A0B8C4A0B0B5A0C3B4A0A0A0A0D3D4C1A0
+      0440: A0A0A4C3B4B0B5A0A0A0A0A0A0A0A0A0B0B3B1C6ADA0A0A0C1C4A0B0B4A0C3B4A0A0A0A0CCC4C1A0A0A0A4C3B4B0B4A0A0A0A0A0A0A0A0A0FFFF0000FFFF0000
+      0480: A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0B0B3B1B2ADA0A0A0C1B2A0B0B0A0A0A0A0A0A0A0CCC4D8A0
+      04C0: A0A0A3A4B0B0A0A0A0A0A0A0A0A0A0A0B0B3B2B2ADA0A0A0C1C3A0B0B5A0C3B4A0A0A0A0CCC4D9A0A0A0A4C3B4B0B5A0A0A0A0A0A0A0A0A0FFFF00FFFFFF0000
+      0500: B0B3B0B0ADA0A0A0B4C3A0B0B0A0B0B3A0A0A0A0CACDD0A0A0A0A4B0B3B0B0A0A0A0A0A0A0A0A0A0B0B3B1B4ADA0A0A0C1C4A0B0C4A0C3B4A0A0A0A0CCC4C1A0
+      0540: A0A0A4C3B4B0C4A0A0A0A0A0A0A0A0A0B0B3B2B5ADA0A0A0C5B0A0B1B4A0A0A0A0A0A0A0C3D0D8A0A0A0A3A4B1B4A0A0A0A0A0A0A0A0A0A0FFFF0000FFFF0000
+      0580: B0B3B0B3ADA0A0A0C1B9A0B0B0A0A0A0A0A0A0A0CCC4C1A0A0A0A3A4B0B0A0A0A0A0A0A0A0A0A0A0B0B3B1B7ADA0A0A0B2B9A0B4B0A0A0A0A0A0A0A0C1CEC4A0
+      05C0: A0A0A3A4B4B0A0A0A0A0A0A0A0A0A0A0B0B3B2B7ADA0A0A0C4B0A0C6B5A0A0A0A0A0A0A0C2CEC5A0A0A0A4B0B3B1C5A0A0A0A0A0A0A0A0A0FFFF0017FFFF0000
+      0600: B0B3B0B5ADA0A0A0B8C4A0B0C2A0C3B4A0A0A0A0D3D4C1A0A0A0A4C3B4B0C2A0A0A0A0A0A0A0A0A0B0B3B1B9ADA0A0A0C4B0A0B0B4A0A0A0A0A0A0A0C2CEC5A0
+      0640: A0A0A4B0B3B1C6A0A0A0A0A0A0A0A0A0B0B3B2B9ADA0A0A0C3B9A0C5C4A0A0A0A0A0A0A0C3CDD0A0A0A0A3A4C5C4A0A0A0A0A0A0A0A0A0A0FFFF0000FFFF0000
+      0680: B0B3B0B8ADA0A0A0C1B9A0B0B0A0A0A0A0A0A0A0CCC4C1A0A0A0A3A4B0B0A0A0A0A0A0A0A0A0A0A0B0B3B1C2ADA0A0A0C5B8A0A0A0A0A0A0A0A0A0A0C9CED8A0
+      06C0: A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0B0B3B2C2ADA0A0A0C4B0A0C6B1A0A0A0A0A0A0A0C2CEC5A0A0A0A4B0B3B1C5A0A0A0A0A0A0A0A0A0FFFF0000FFFF0000
+      0700: B0B3B0C1ADA0A0A0B8C4A0B0B4A0C3B4A0A0A0A0D3D4C1A0A0A0A4C3B4B0B4A0A0A0A0A0A0A0A0A0B0B3B1C3ADA0A0A0C4B0A0C6B6A0A0A0A0A0A0A0C2CEC5A0
+      0740: A0A0A4B0B3B1B4A0A0A0A0A0A0A0A0A0AAB3B0B0C7A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0FFFF0000FFFF0000
+      0780: B0B3B0C4ADA0A0A0C1B9A0B0B1A0A0A0A0A0A0A0CCC4C1A0A0A0A3A4B0B1A0A0A0A0A0A0A0A0A0A0B0B3B1C5ADA0A0A0B0B0A0A0A0A0A0A0A0A0A0A0C2D2CBA0
+      07C0: A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A000FF0000FFFF0000
+
+Unit:
+  Type: Auxiliary Slot
+  Version: 1
+  State:
+    Card: Extended 80 Column
+    Num Aux Banks: 0x01   # [0,1..7F] 0=no aux mem, 1=128K system, etc
+    Active Aux Bank: 0x00 # [  0..7E] 0=memaux
+    Auxiliary Memory Bank00:
+      0000: 00
+
+Unit:
+  Type: Slots
+  Version: 1
+  State:
+    1:
+      Card: Generic Printer
+      Version: 1
+      State:
+        Inactivity: 0
+        Printer Idle Limit: 10
+        Print Filename: c:\Work\Personal\AppleWin\svn\applewin\trunk\AppleWin\Debug\Printer.txt
+        Is File Open: false
+        Dump To Printer: false
+        Convert Encoding: true
+        Filter Unprintable: true
+        Printer Append: false
+        Enable Dump To Real Printer: false
+    2:
+      Card: Super Serial Card
+      Version: 1
+      State:
+        DIPSW Default:
+          Baud Rate: 19200
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: true
+          Interrupts: false
+        DIPSW Current:
+          Baud Rate: 19200
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: true
+          Interrupts: false
+        Baud Rate: 19200
+        Stop Bits: 0
+        Byte Size: 8
+        Parity: 0
+        Control Byte: 0x1F
+        Command Byte: 0x00
+        Comm Inactivity: 0
+        TX IRQ Enabled: false
+        RX IRQ Enabled: false
+        TX IRQ Pending: false
+        RX IRQ Pending: false
+        Written TX: false
+        Serial Port Name: ""
+    4:
+      Card: Mockingboard C
+      Version: 2
+      State:
+        Unit0:
+          SY6522:
+            ORB: 0x00
+            ORA: 0x00
+            DDRB: 0x00
+            DDRA: 0x00
+            Timer1 Counter: 0x00FC
+            Timer1 Latch: 0x0100
+            Timer2 Counter: 0x16FB
+            Timer2 Latch: 0x0000
+            Serial Shift: 0x00
+            ACR: 0x00
+            PCR: 0x00
+            IFR: 0x00
+            IER: 0x00
+          AY8910:
+            Tone0 Tick: 0
+            Tone1 Tick: 0
+            Tone2 Tick: 0
+            Tone0 High: 0
+            Tone1 High: 0
+            Tone2 High: 0
+            Noise Tick: 15034445
+            Tone Subcycles: 159004
+            Env Subcycles: 159004
+            Env Internal Tick: 13
+            Env Tick: 15034445
+            Tick Incr: 1516517
+            Tone0 Period: 1
+            Tone1 Period: 1
+            Tone2 Period: 1
+            Noise Period: 0
+            RNG: 18250
+            Noise Toggle: 1
+            Env First: 0
+            Env Rev: 0
+            Env Counter: 0
+            Registers:
+              Tone0 Period: 0x000
+              Tone1 Period: 0x000
+              Tone2 Period: 0x000
+              Noise Period: 0x00
+              Mixer: 0x00
+              Vol0: 0x00
+              Vol1: 0x00
+              Vol2: 0x00
+              Env Period: 0x0000
+              Env Shape: 0x0
+              PortA: 0x00
+              PortB: 0x00
+          SSI263:
+            Duration / Phoneme: 0x00
+            Inflection: 0x00
+            Rate / Inflection: 0x00
+            Control / Articulation / Amplitude: 0x00
+            Filter Frequency: 0x00
+            Current Mode: 0x00
+          AY Current Register: 0x0
+          Timer1 IRQ Pending: false # Not supported
+          Timer2 IRQ Pending: false # Not supported
+          Speech IRQ Pending: false # Not supported
+          Timer1 Active: true
+          Timer2 Active: false
+        Unit1:
+          SY6522:
+            ORB: 0x00
+            ORA: 0x00
+            DDRB: 0x00
+            DDRA: 0x00
+            Timer1 Counter: 0x16FB
+            Timer1 Latch: 0x0000
+            Timer2 Counter: 0x16FB
+            Timer2 Latch: 0x0000
+            Serial Shift: 0x00
+            ACR: 0x00
+            PCR: 0x00
+            IFR: 0x00
+            IER: 0x00
+          AY8910:
+            Tone0 Tick: 0
+            Tone1 Tick: 0
+            Tone2 Tick: 0
+            Tone0 High: 0
+            Tone1 High: 0
+            Tone2 High: 0
+            Noise Tick: 15034445
+            Tone Subcycles: 159004
+            Env Subcycles: 159004
+            Env Internal Tick: 13
+            Env Tick: 15034445
+            Tick Incr: 1516517
+            Tone0 Period: 1
+            Tone1 Period: 1
+            Tone2 Period: 1
+            Noise Period: 0
+            RNG: 18250
+            Noise Toggle: 1
+            Env First: 0
+            Env Rev: 0
+            Env Counter: 0
+            Registers:
+              Tone0 Period: 0x000
+              Tone1 Period: 0x000
+              Tone2 Period: 0x000
+              Noise Period: 0x00
+              Mixer: 0x00
+              Vol0: 0x00
+              Vol1: 0x00
+              Vol2: 0x00
+              Env Period: 0x0000
+              Env Shape: 0x0
+              PortA: 0x00
+              PortB: 0x00
+          SSI263:
+            Duration / Phoneme: 0x00
+            Inflection: 0x00
+            Rate / Inflection: 0x00
+            Control / Articulation / Amplitude: 0x00
+            Filter Frequency: 0x00
+            Current Mode: 0x00
+          AY Current Register: 0x0
+          Timer1 IRQ Pending: false # Not supported
+          Timer2 IRQ Pending: false # Not supported
+          Speech IRQ Pending: false # Not supported
+          Timer1 Active: false
+          Timer2 Active: false
+    5:
+      Card: Mockingboard C
+      Version: 2
+      State:
+        Unit0:
+          SY6522:
+            ORB: 0x00
+            ORA: 0x00
+            DDRB: 0x00
+            DDRA: 0x00
+            Timer1 Counter: 0x16FB
+            Timer1 Latch: 0x0000
+            Timer2 Counter: 0x16FB
+            Timer2 Latch: 0x0000
+            Serial Shift: 0x00
+            ACR: 0x00
+            PCR: 0x00
+            IFR: 0x00
+            IER: 0x00
+          AY8910:
+            Tone0 Tick: 0
+            Tone1 Tick: 0
+            Tone2 Tick: 0
+            Tone0 High: 0
+            Tone1 High: 0
+            Tone2 High: 0
+            Noise Tick: 15034445
+            Tone Subcycles: 159004
+            Env Subcycles: 159004
+            Env Internal Tick: 13
+            Env Tick: 15034445
+            Tick Incr: 1516517
+            Tone0 Period: 1
+            Tone1 Period: 1
+            Tone2 Period: 1
+            Noise Period: 0
+            RNG: 18250
+            Noise Toggle: 1
+            Env First: 0
+            Env Rev: 0
+            Env Counter: 0
+            Registers:
+              Tone0 Period: 0x000
+              Tone1 Period: 0x000
+              Tone2 Period: 0x000
+              Noise Period: 0x00
+              Mixer: 0x00
+              Vol0: 0x00
+              Vol1: 0x00
+              Vol2: 0x00
+              Env Period: 0x0000
+              Env Shape: 0x0
+              PortA: 0x00
+              PortB: 0x00
+          SSI263:
+            Duration / Phoneme: 0x00
+            Inflection: 0x00
+            Rate / Inflection: 0x00
+            Control / Articulation / Amplitude: 0x00
+            Filter Frequency: 0x00
+            Current Mode: 0x00
+          AY Current Register: 0x0
+          Timer1 IRQ Pending: false # Not supported
+          Timer2 IRQ Pending: false # Not supported
+          Speech IRQ Pending: false # Not supported
+          Timer1 Active: false
+          Timer2 Active: false
+        Unit1:
+          SY6522:
+            ORB: 0x00
+            ORA: 0x00
+            DDRB: 0x00
+            DDRA: 0x00
+            Timer1 Counter: 0x16FB
+            Timer1 Latch: 0x0000
+            Timer2 Counter: 0x16FB
+            Timer2 Latch: 0x0000
+            Serial Shift: 0x00
+            ACR: 0x00
+            PCR: 0x00
+            IFR: 0x00
+            IER: 0x00
+          AY8910:
+            Tone0 Tick: 0
+            Tone1 Tick: 0
+            Tone2 Tick: 0
+            Tone0 High: 0
+            Tone1 High: 0
+            Tone2 High: 0
+            Noise Tick: 15034445
+            Tone Subcycles: 159004
+            Env Subcycles: 159004
+            Env Internal Tick: 13
+            Env Tick: 15034445
+            Tick Incr: 1516517
+            Tone0 Period: 1
+            Tone1 Period: 1
+            Tone2 Period: 1
+            Noise Period: 0
+            RNG: 18250
+            Noise Toggle: 1
+            Env First: 0
+            Env Rev: 0
+            Env Counter: 0
+            Registers:
+              Tone0 Period: 0x000
+              Tone1 Period: 0x000
+              Tone2 Period: 0x000
+              Noise Period: 0x00
+              Mixer: 0x00
+              Vol0: 0x00
+              Vol1: 0x00
+              Vol2: 0x00
+              Env Period: 0x0000
+              Env Shape: 0x0
+              PortA: 0x00
+              PortB: 0x00
+          SSI263:
+            Duration / Phoneme: 0x00
+            Inflection: 0x00
+            Rate / Inflection: 0x00
+            Control / Articulation / Amplitude: 0x00
+            Filter Frequency: 0x00
+            Current Mode: 0x00
+          AY Current Register: 0x0
+          Timer1 IRQ Pending: false # Not supported
+          Timer2 IRQ Pending: false # Not supported
+          Speech IRQ Pending: false # Not supported
+          Timer1 Active: false
+          Timer2 Active: false
+    6:
+      Card: Disk][
+      Version: 1
+      State:
+        Phases: 0x0
+        Current Drive: 0
+        Disk Accessed: false
+        Enhance Disk: true
+        Floppy Latch: 0xFF
+        Floppy Motor On: false
+        Floppy Write Mode: false
+        Unit0:
+          Filename: ""
+          Track: 0
+          Phase: 0
+          Byte: 0x0000
+          Write Protected: false
+          Spinning: 0
+          Write Light: 0
+          Nibbles: 0x0000
+          Track Image Data: 0
+          Track Image Dirty: 0
+        Unit1:
+          Filename: ""
+          Track: 0
+          Phase: 0
+          Byte: 0x0000
+          Write Protected: false
+          Spinning: 0
+          Write Light: 0
+          Nibbles: 0x0000
+          Track Image Data: 0
+          Track Image Dirty: 0
+...
