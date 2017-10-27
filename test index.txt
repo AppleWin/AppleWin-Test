@@ -74,11 +74,11 @@ Cybernoid2-Phasor.aws.yaml
 Cybernoid-TimerAtC480.aws.yaml
 . GH#309: Mockingboard, mid-tune using 6522 at $C480 for Timer1 interrupt
 
-Cybernoid(MBv2).aws.yaml
-. save-state: Mockingboard unit v2
+Cybernoid(MBv3).aws.yaml
+. save-state: Mockingboard unit v3
 
-Cybernoid2(Phasorv2).aws.yaml
-. save-state: Phasor unit v2
+Cybernoid2(Phasorv3).aws.yaml
+. save-state: Phasor unit v3
 
 MB-Poll-IFR-Test.aws.yaml
 . GH#496: Test polling IFR.Timer1 (NB. Interrupt enable is off, ie. IER.Timer1=0)

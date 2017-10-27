@@ -2151,7 +2151,7 @@ Unit:
         Serial Port Name: ""
     4:
       Card: Phasor
-      Version: 2
+      Version: 3
       State:
         Clock Scale Factor: 1
         Mode: 0
@@ -2277,6 +2277,7 @@ Unit:
             Control / Articulation / Amplitude: 0x00
             Filter Frequency: 0x00
             Current Mode: 0x00
+          Unit State: 0x2
           AY Current Register: 0x0
           Timer1 IRQ Pending: false # Not supported
           Timer2 IRQ Pending: false # Not supported
@@ -2375,6 +2376,7 @@ Unit:
             Control / Articulation / Amplitude: 0x00
             Filter Frequency: 0x00
             Current Mode: 0x00
+          Unit State: 0x2
           AY Current Register: 0x0
           Timer1 IRQ Pending: false # Not supported
           Timer2 IRQ Pending: false # Not supported

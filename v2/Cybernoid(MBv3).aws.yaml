@@ -2151,7 +2151,7 @@ Unit:
         Serial Port Name: ""
     4:
       Card: Mockingboard C
-      Version: 2
+      Version: 3
       State:
         Unit0:
           SY6522:
@@ -2225,6 +2225,7 @@ Unit:
             Control / Articulation / Amplitude: 0x00
             Filter Frequency: 0x00
             Current Mode: 0x00
+          Unit State: 0x2
           AY Current Register: 0x0
           Timer1 IRQ Pending: false # Not supported
           Timer2 IRQ Pending: false # Not supported
@@ -2303,6 +2304,7 @@ Unit:
             Control / Articulation / Amplitude: 0x00
             Filter Frequency: 0x00
             Current Mode: 0x00
+          Unit State: 0x2
           AY Current Register: 0x0
           Timer1 IRQ Pending: false # Not supported
           Timer2 IRQ Pending: false # Not supported
@@ -2311,7 +2313,7 @@ Unit:
           Timer2 Active: false
     5:
       Card: Mockingboard C
-      Version: 2
+      Version: 3
       State:
         Unit0:
           SY6522:
@@ -2370,6 +2372,7 @@ Unit:
             Control / Articulation / Amplitude: 0x00
             Filter Frequency: 0x00
             Current Mode: 0x00
+          Unit State: 0x2
           AY Current Register: 0x0
           Timer1 IRQ Pending: false # Not supported
           Timer2 IRQ Pending: false # Not supported
@@ -2433,6 +2436,7 @@ Unit:
             Control / Articulation / Amplitude: 0x00
             Filter Frequency: 0x00
             Current Mode: 0x00
+          Unit State: 0x2
           AY Current Register: 0x0
           Timer1 IRQ Pending: false # Not supported
           Timer2 IRQ Pending: false # Not supported
