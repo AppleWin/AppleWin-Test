@@ -25,6 +25,7 @@
 %1\applewin -log -load-state %~dp0\Cybernoid(MBv3).aws.yaml
 %1\applewin -log -load-state %~dp0\Cybernoid2(Phasorv3).aws.yaml
 %1\applewin -log -load-state %~dp0\MB-Poll-IFR-Test.aws.yaml
+%1\applewin -log -load-state %~dp0\MB-Poll-IFR-Test2.aws.yaml
 %1\applewin -log -load-state %~dp0\dazzledraw1.aws.yaml
 %1\applewin -log -load-state %~dp0\FANTAVISION.aws.yaml
 %1\applewin -log -load-state %~dp0\HDD-32MB.aws.yaml

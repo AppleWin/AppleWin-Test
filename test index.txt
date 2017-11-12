@@ -84,6 +84,10 @@ MB-Poll-IFR-Test.aws.yaml
 . GH#496: Test polling IFR.Timer1 (NB. Interrupt enable is off, ie. IER.Timer1=0)
 . Success is an "OK" message, otherwise crash to the monitor
 
+MB-Poll-IFR-Test2.aws.yaml
+. GH#496: dschmenk's MB player, polling IFR.Timer1
+. https://github.com/dschmenk/PLASMA/blob/master/src/mockingboard/mbtest-poll.po (165f16d)
+
 dazzledraw1.aws.yaml
 . Test: mouse
 
