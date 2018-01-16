@@ -149,6 +149,23 @@ SSC-TCP-IN#2.aws.yaml
 
 =================================================
 
+DiskFormat:
+-----------
+ProDOS_format_auth_dsk.aws.yaml
+ProDOS_format_auth_nib.aws.yaml
+ProDOS_format_enh_dsk.aws.yaml
+ProDOS_format_enh_nib.aws.yaml
+DOS3.3_init_auth_dsk.aws.yaml
+DOS3.3_init_auth_nib.aws.yaml
+DOS3.3_init_enh_dsk.aws.yaml
+DOS3.3_init_enh_nib.aws.yaml
+. GH#125, GH-PR#507: test:
+	- .dsk / .nib images
+	- ProDOS format / DOS 3.3 init
+	- authentic / enhanced disk access speed
+
+=================================================
+
 v1: Info about each test:
 -------------------------
 
