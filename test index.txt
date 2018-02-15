@@ -164,6 +164,9 @@ DOS3.3_init_enh_nib.aws.yaml
 	- ProDOS format / DOS 3.3 init
 	- authentic / enhanced disk access speed
 
+DOS3.2.1_init_enh_nib.aws.yaml
+. GH#537: Test DOS 3.2.1 INIT
+
 =================================================
 
 v1: Info about each test:

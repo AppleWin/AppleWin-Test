@@ -12,6 +12,8 @@ copy /y %~dp0\zero.nib %~dp0\test0.nib
 %1\applewin -log -load-state %~dp0\DOS3.3_init_auth_nib.aws.yaml
 %1\applewin -log -load-state %~dp0\DOS3.3_init_enh_dsk.aws.yaml
 %1\applewin -log -load-state %~dp0\DOS3.3_init_enh_nib.aws.yaml
+copy /y %~dp0\zero.nib %~dp0\test0.nib
+%1\applewin -log -load-state %~dp0\DOS3.2.1_init_enh_nib.aws.yaml
 del %~dp0\test0.dsk
 del %~dp0\test0.nib
 @ECHO Done v2 Disk Format tests
