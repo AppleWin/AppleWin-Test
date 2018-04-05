@@ -147,6 +147,13 @@ SSC-TCP-IN#2.aws.yaml
 	- Test that SSC's expansion ROM is loaded - PC it in expansion ROM space.
 	- Test TCP-serial input. Eg. Using Putty (IP=127.0.0.1; Port=1977; Connection type=Raw)
 
+cmd line switches:
+. GH#398:
+	. -d1, -s7 empty
+	. -d1, -d2
+	. -h1
+	. -h1, -h2
+
 =================================================
 
 DiskFormat:

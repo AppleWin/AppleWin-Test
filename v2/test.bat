@@ -42,6 +42,10 @@
 %1\applewin -log -load-state "%~dp0\Gemstone Warrior.aws.yaml"
 %1\applewin -log -load-state %~dp0\NoSlotClockTest.aws.yaml
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
+%1\applewin -log -d1 %~dp0\AS-S2.dsk -s7 empty
+%1\applewin -log -d1 %~dp0\AS-S1.dsk -d2 "%~dp0\AS-S2.dsk"
+%1\applewin -log -h1 %~dp0\GNR-FINAL.2mg.gz
+%1\applewin -log -h1 "%~dp0\Prince of Persia (Original 3.5 floppy for IIc+).2mg" -h2 %~dp0\GNR-FINAL.2mg.gz
 CALL v2\DiskFormat\test.bat %~1
 @ECHO Done v2 tests
 @GOTO end
