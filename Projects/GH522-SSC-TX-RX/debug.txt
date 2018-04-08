@@ -1,0 +1,8 @@
+// PWD: <root>\AppleWin-Test\Projects\GH522-SSC-TX-RX
+// run "debug.txt"
+bload "ssc-tx-rx-poll-irq",6000
+
+asc msg1:msg1End
+asc msg2:msg2End
+asc msg3:msg3End
+asc msg4:msg4End

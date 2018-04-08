@@ -144,8 +144,15 @@ NoSlotClockTest.aws.yaml
 
 SSC-TCP-IN#2.aws.yaml
 . GH#486:
-	- Test that SSC's expansion ROM is loaded - PC it in expansion ROM space.
+	- Test that SSC's expansion ROM is loaded - PC is in expansion ROM space.
 	- Test TCP-serial input. Eg. Using Putty (IP=127.0.0.1; Port=1977; Connection type=Raw)
+
+SSC-TCP-tx-rx-tcp.aws.yaml
+. GH#522:
+	- Test that SSC's expansion ROM is loaded - PC is in expansion ROM space.
+	- Test TCP-serial input. Eg. Using Putty (IP=127.0.0.1; Port=1977; Connection type=Raw)
+	- Test RX: polled & interrupt
+	- Test TX: polled & interrupt
 
 cmd line switches:
 . GH#398:

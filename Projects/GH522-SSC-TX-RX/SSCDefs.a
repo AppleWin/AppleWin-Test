@@ -1,0 +1,31 @@
+SLOT = 2
+CARD_BASE = $C080 + SLOT*16
+
+SSC_RX		= CARD_BASE + $8	; R:RX
+SSC_TX		= CARD_BASE + $8	; W:TX
+SSC_STATUS	= CARD_BASE + $9	; RW
+SSC_COMMAND	= CARD_BASE + $A	; RW
+SSC_CONTROL	= CARD_BASE + $B	; RW
+
+;;; STATUS
+ST_IRQ			= 1<<7
+ST_DSR			= 1<<6
+ST_DCD			= 1<<5
+ST_TX_EMPTY		= 1<<4
+ST_RX_FULL		= 1<<3
+ST_OVERRUN_ERR	= 1<<2
+ST_FRAMING_ERR	= 1<<1
+ST_PARITY_ERR	= 1<<0
+
+;;; COMMAND
+; b7:5 - Parity (b5: 1=use b7:6, 0=no parity)
+; b4 - Mode echo for receiver (0=no echo, 1=echo)
+; b3:2 - Tx interrupt control
+CMD_TX_MASK = 3<<2
+CMD_TX_IRQ_DIS_RTS_HIGH = 0<<2
+CMD_TX_IRQ_ENA_RTS_LOW = 1<<2
+CMD_TX_IRQ_DIS_RTS_LOW = 2<<2
+CMD_TX_IRQ_DIS_RTS_LOW_BRK = 3<<2
+; b1 - Rx interrupt control (1=!IRQ interrupt disabled)
+CMD_RX_IRQ_DIS = 1<<1
+; b0 - DTR (0=set DTR high (indicates 'not ready'))
