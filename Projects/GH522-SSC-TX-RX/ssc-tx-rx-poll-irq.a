@@ -85,7 +85,8 @@ loop2	lda		msg2,x
 	jsr		print
 
 	lda		SSC_COMMAND
-	ora		#CMD_RX_IRQ_DIS			; Disable Rx IRQ
+	and		#!CMD_TX_MASK
+	ora		#CMD_RX_IRQ_DIS|CMD_TX_IRQ_DIS_RTS_LOW		; Disable Rx & Tx IRQs
 	sta		SSC_COMMAND
 	
 loop3	lda		SSC_STATUS
@@ -127,6 +128,10 @@ loop4	lda		irqRxFlag
 		jsr		COUT
 		jmp		loop4
 .done4
+
+	lda		SSC_COMMAND
+	ora		#CMD_RX_IRQ_DIS			; Disable Rx IRQ
+	sta		SSC_COMMAND
 
 	;
 
@@ -195,25 +200,39 @@ Interrupt:
 	tya
 	pha
 
-	ldx		SSC_STATUS	; Clear IRQ flag
+	lda		SSC_STATUS	; Clear IRQ flag
+	tax
 	bmi		+			; b7=ST_IRQ
 	brk		; error
 
-+	tax
-	and		#ST_TX_EMPTY|ST_RX_FULL
++	and		#ST_TX_EMPTY|ST_RX_FULL
 	bne		+
 	brk		; error
 
-+	and		#ST_TX_EMPTY
++	lda		SSC_COMMAND
+	tay
+	and		#CMD_TX_MASK
+	cmp		#CMD_TX_IRQ_ENA_RTS_LOW
+	bne		+
+	txa
+	and		#ST_TX_EMPTY
 	beq		+
 		lda		#1
 		sta		irqTxDoneFlag
 
-+	txa
++	tya
+	and		#CMD_RX_IRQ_DIS
+	bne		+
+	txa
 	and		#ST_RX_FULL
 	beq		+
 		lda		#1
 		sta		irqRxFlag
+
++	lda		irqTxDoneFlag
+	ora		irqRxFlag
+	bne		+
+	brk		; error
 
 +	pla
 	tay
