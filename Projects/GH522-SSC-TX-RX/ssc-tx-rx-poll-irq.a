@@ -1,4 +1,4 @@
-;ACME 0.96.3
+;ACME 0.96.4
 
 !cpu 6502	; Compatible with all Apple2's
 !to "ssc-tx-rx-poll-irq", plain
@@ -134,6 +134,66 @@ loop4	lda		irqRxFlag
 	sta		SSC_COMMAND
 
 	;
+	;;; Test DSR, DCD
+	;
+
+	; Test disconnect
+
+	lda		#<msg5
+	sta		$fe
+	lda		#>msg5
+	sta		$ff
+	jsr		print
+
+loop5a	lda		SSC_STATUS
+		and		#ST_DSR
+		beq		loop5a				; DSR is active low
+
+	lda		#<msg5_dsr
+	sta		$fe
+	lda		#>msg5_dsr
+	sta		$ff
+	jsr		print
+
+loop5b	lda		SSC_STATUS
+		and		#ST_DCD
+		beq		loop5b				; DCD is active low
+
+	lda		#<msg5_dcd
+	sta		$fe
+	lda		#>msg5_dcd
+	sta		$ff
+	jsr		print
+
+	; Test reconnect
+
+	lda		#<msg6
+	sta		$fe
+	lda		#>msg6
+	sta		$ff
+	jsr		print
+
+loop6a	lda		SSC_STATUS
+		and		#ST_DSR
+		bne		loop6a				; DSR is active low
+
+	lda		#<msg6_dsr
+	sta		$fe
+	lda		#>msg6_dsr
+	sta		$ff
+	jsr		print
+
+loop6b	lda		SSC_STATUS
+		and		#ST_DCD
+		bne		loop6b				; DCD is active low
+
+	lda		#<msg6_dcd
+	sta		$fe
+	lda		#>msg6_dcd
+	sta		$ff
+	jsr		print
+
+	;
 
 	lda		saveFE
 	sta		$fe
@@ -143,8 +203,8 @@ loop4	lda		irqRxFlag
 	lda		oldCommand
 	sta		SSC_COMMAND
 	rts
-	
-	;
+
+;--------------------------------------
 
 ; Pre: ($FE) = msg
 print
@@ -163,8 +223,6 @@ print
 		bne 	.loop
 .pdone
 	rts
-	
-	;
 
 ;------------------------------------------------------------------------------
 
@@ -184,6 +242,20 @@ msg3 !text "Receive chars by polling ('x' to exit)",0xd
 msg3End !text 0
 msg4 !text 0xd,"Receive chars by IRQ ('x' to exit)",0xd
 msg4End !text 0
+
+msg5 !text "Close PuTTY session",0xd,0xa
+msg5End !text 0
+msg5_dsr !text "DSR inactive (waiting for DCD)",0xd
+msg5_dsrEnd !text 0
+msg5_dcd !text "DCD inactive",0xd,0xa
+msg5_dcdEnd !text 0
+
+msg6 !text "Restart PuTTY session",0xd,0xa
+msg6End !text 0
+msg6_dsr !text "DSR active (waiting for DCD)",0xd
+msg6_dsrEnd !text 0
+msg6_dcd !text "DCD active",0xd,0xa
+msg6_dcdEnd !text 0
 
 ;------------------------------------------------------------------------------
 
