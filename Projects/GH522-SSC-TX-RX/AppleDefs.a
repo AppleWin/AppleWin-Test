@@ -13,4 +13,5 @@ SW_SLOTC3ROM_R = $C017	; Active high
 
 ;--------------------------------------
 
+WAIT = $FCA8
 COUT = $FDED
