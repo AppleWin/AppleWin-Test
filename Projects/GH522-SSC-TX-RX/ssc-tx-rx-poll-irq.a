@@ -125,6 +125,15 @@ loop3	lda		SSC_STATUS
 		jmp		loop3
 .done3
 
+	; Enable Rx IRQ before next byte is received
+	; . Do this before the expensive msg print (and very expensive potential screen scroll!) to ensure we get the Rx IRQ
+	;     otherwise we may receive next byte before Rx IRQ is enabled, and so miss the IRQ.
+	; . 6551: assume enabling Rx IRQ after byte received does not trigger an IRQ
+	; . NB. for 19200 baud / 8-N-1 (9 bits), then 2133 byte/sec => a new byte every 479 (1.023MHz) cycles
+	lda		SSC_COMMAND
+	and		#!CMD_RX_IRQ_DIS		; Enable Rx IRQ
+	sta		SSC_COMMAND
+
 	;
 
 	; Use RX IRQ

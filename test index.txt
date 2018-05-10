@@ -143,16 +143,20 @@ NoSlotClockTest.aws.yaml
 . NB. Use ProDOS command "- NS.CLOCK.UTILS"
 
 SSC-TCP-IN#2.aws.yaml
+. Test save-state SSC unit v1
 . GH#486:
 	- Test that SSC's expansion ROM is loaded - PC is in expansion ROM space.
 	- Test TCP-serial input. Eg. Using Putty (IP=127.0.0.1; Port=1977; Connection type=Raw)
 
 SSC-TCP-tx-rx-tcp.aws.yaml
+. Test save-state SSC unit v2
+. Test that SSC's expansion ROM is loaded - PC is in expansion ROM space.
 . GH#522:
-	- Test that SSC's expansion ROM is loaded - PC is in expansion ROM space.
 	- Test TCP-serial input. Eg. Using Putty (IP=127.0.0.1; Port=1977; Connection type=Raw)
 	- Test RX: polled & interrupt
 	- Test TX: polled & interrupt
+. Test DSR, DCD
+. NB. Can also switch from TCP to COM, and repeat tests for Serial COM port
 
 cmd line switches:
 . GH#398:
