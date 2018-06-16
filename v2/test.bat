@@ -2,6 +2,7 @@
 
 %1\applewin -log -load-state %~dp0\audit.aws.yaml
 %1\applewin -log -load-state %~dp0\LC-RamWrite-Test.aws.yaml
+%1\applewin -log -load-state %~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml -alt-enter=open-apple-enter
 %1\applewin -log -load-state %~dp0\archon_i.aws.yaml
 %1\applewin -log -load-state %~dp0\A2.aws.yaml
 %1\applewin -log -load-state %~dp0\A2+.aws.yaml
