@@ -134,6 +134,7 @@ Tests-Various.aws.yaml
 . GH#352: Full-speed in mixed mode results in flickery video
 . GH#356: PrintScreen from Color TV or B&W TV video modes is missing top line
 . GH#254: Rainbow (read floating bus to switch between GR and HGR screens)
+. GH#555: All combinations of 40-col & 80-col text/graphics mixed modes
 
 TK3000e.aws.yaml
 . TK3000 //e
