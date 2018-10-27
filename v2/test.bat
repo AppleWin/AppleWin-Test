@@ -1,7 +1,6 @@
 @IF "%~1" == "" GOTO help
 
 %1\applewin -log -load-state %~dp0\audit.aws.yaml
-%1\applewin -log -load-state %~dp0\LC-RamWrite-Test.aws.yaml
 %1\applewin -log -load-state %~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml -alt-enter=open-apple-enter
 %1\applewin -log -load-state %~dp0\archon_i.aws.yaml
 %1\applewin -log -load-state %~dp0\A2.aws.yaml
@@ -37,7 +36,6 @@
 %1\applewin -log -load-state %~dp0\Pravets8A.aws.yaml
 %1\applewin -log -load-state %~dp0\Pravets8M.aws.yaml
 %1\applewin -log -load-state "%~dp0\Prince of Persia.aws.yaml"
-%1\applewin -log -load-state %~dp0\RamWorks_r4.aws.yaml
 %1\applewin -log -load-state %~dp0\Tests-Various.aws.yaml
 %1\applewin -log -load-state %~dp0\TK3000e.aws.yaml
 %1\applewin -log -load-state "%~dp0\Gemstone Warrior.aws.yaml"
@@ -48,6 +46,7 @@
 %1\applewin -log -d1 %~dp0\AS-S1.dsk -d2 "%~dp0\AS-S2.dsk"
 %1\applewin -log -h1 %~dp0\GNR-FINAL.2mg.gz
 %1\applewin -log -h1 "%~dp0\Prince of Persia (Original 3.5 floppy for IIc+).2mg" -h2 %~dp0\GNR-FINAL.2mg.gz
+CALL v2\Memory\test.bat %~1
 CALL v2\DiskFormat\test.bat %~1
 @ECHO Done v2 tests
 @GOTO end
