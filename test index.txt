@@ -191,6 +191,14 @@ Memory:
 LC-RAMWrite-Test.aws.yaml
 . Test save-state being in the middle of 2x LDA $C083 (to write enable LC Bank2 RAM)
 . Success is an "OK" message, otherwise crash to the monitor
+LC-RAMWrite-Test-II+.aws.yaml
+. Same as above but for II+ slot-0 LC
+LC-RAMWrite-Test-II+Saturn.aws.yaml
+. Same as above but for II+ slot-0 Saturn
+
+Saturn64.aws.yaml
+Saturn128.aws.yaml
+. Test Saturn64/128K cards by running RAMTEST64K/RAMTEST128K
 
 RamWorks_r4.aws.yaml
 . Test RamWorks card
