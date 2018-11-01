@@ -17,7 +17,7 @@ Unit:
       Y: 0x1D
       P: 0xB5
       S: 0xEA
-      PC: 0x1D2B
+      PC: 0x1D28
       Cumulative Cycles: 0x0000000001D39D40
     Joystick:
       Counter Reset Cycle: 0x0000000000000000
@@ -27,7 +27,7 @@ Unit:
       Joystick1 TrimY: 0 # not implemented yet
     Keyboard:
       Last Key: 0x0D
-      Key Waiting: false
+      Key Waiting: true
     Speaker:
       Last Cycle: 0x0000000001D39D40
     Video:
