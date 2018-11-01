@@ -27,6 +27,7 @@ Unit:
       Joystick1 TrimY: 0 # not implemented yet
     Keyboard:
       Last Key: 0x0D
+      Key Waiting: false
     Speaker:
       Last Cycle: 0x000000001863FC28
     Video:
