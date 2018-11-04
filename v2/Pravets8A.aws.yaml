@@ -11,7 +11,7 @@ Unit:
   State:
     Model: Pravets8A
     CPU:
-      Type: 65C02
+      Type: 6502
       A: 0x0D
       X: 0x1F
       Y: 0xB6
