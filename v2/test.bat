@@ -1,6 +1,11 @@
 @IF "%~1" == "" GOTO help
 
-%1\applewin -log -load-state %~dp0\audit.aws.yaml
+%1\applewin -log -load-state %~dp0\audit-A2.aws.yaml
+%1\applewin -log -load-state %~dp0\audit-A2-LC.aws.yaml
+%1\applewin -log -load-state %~dp0\audit-A2+-LC.aws.yaml
+%1\applewin -log -load-state %~dp0\audit-A2+-Saturn.aws.yaml
+%1\applewin -log -load-state %~dp0\audit-A2e.aws.yaml
+%1\applewin -log -load-state %~dp0\audit-A2e-enhanced.aws.yaml
 %1\applewin -log -load-state %~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml -alt-enter=open-apple-enter
 %1\applewin -log -load-state %~dp0\archon_i.aws.yaml
 %1\applewin -log -load-state %~dp0\A2.aws.yaml
