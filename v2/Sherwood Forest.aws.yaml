@@ -1,0 +1,145 @@
+# Date-stamp: Sat Dec 08 19:47:17 2018
+
+---
+File_hdr:
+  Tag: AppleWin Save State
+  Version: 2
+
+Unit:
+  Type: Apple2
+  Version: 2
+  State:
+    Model: Enhanced Apple//e
+    CPU:
+      Type: 65C02
+      A: 0xFF
+      X: 0xFF
+      Y: 0xFF
+      P: 0xF7
+      S: 0xFC
+      PC: 0xFA62
+      Cumulative Cycles: 0x0000000000000000
+    Joystick:
+      Counter Reset Cycle: 0x0000000000000000
+      Joystick0 TrimX: 0
+      Joystick0 TrimY: 0
+      Joystick1 TrimX: 0 # not implemented yet
+      Joystick1 TrimY: 0 # not implemented yet
+    Keyboard:
+      Last Key: 0x00
+      Key Waiting: false
+    Speaker:
+      Last Cycle: 0x0000000000000000
+    Video:
+      Alt Char Set: false
+      Video Mode: 0x00000040
+      Cycles This Frame: 0
+    Memory:
+      Memory Mode: 0x00000410
+      Last RAM Write: 0
+      IO_SELECT: 0x00
+      IO_SELECT_InternalROM: 0x00
+      Expansion ROM Type: 0
+      Peripheral ROM Slot: 0
+    Main Memory:
+      0000: FF
+
+Unit:
+  Type: Auxiliary Slot
+  Version: 1
+  State:
+    Card: Extended 80 Column
+    Num Aux Banks: 0x01   # [0,1..7F] 0=no aux mem, 1=128K system, etc
+    Active Aux Bank: 0x00 # [  0..7E] 0=memaux
+    Auxiliary Memory Bank00:
+      0000: 00
+
+Unit:
+  Type: Slots
+  Version: 1
+  State:
+    1:
+      Card: Generic Printer
+      Version: 1
+      State:
+        Inactivity: 0
+        Printer Idle Limit: 10
+        Print Filename: c:\Work\Personal\AppleWin\svn\applewin\trunk\AppleWin\Debug\Printer.txt
+        Is File Open: false
+        Dump To Printer: false
+        Convert Encoding: true
+        Filter Unprintable: true
+        Printer Append: false
+        Enable Dump To Real Printer: false
+    2:
+      Card: Super Serial Card
+      Version: 2
+      State:
+        DIPSW Default:
+          Baud Rate: 9600
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: false
+          Interrupts: true
+        DIPSW Current:
+          Baud Rate: 9600
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: false
+          Interrupts: true
+        Control Byte: 0x00
+        Command Byte: 0x00
+        TX IRQ Pending: false
+        RX IRQ Pending: false
+        Written TX: true
+        Support DCD: false
+        Serial Port Name: ""
+    6:
+      Card: Disk][
+      Version: 3
+      State:
+        Phases: 0x0
+        Current Drive: 0
+        Disk Accessed: false
+        Enhance Disk: true
+        Floppy Latch: 0x00
+        Floppy Motor On: false
+        Floppy Write Mode: false
+        Last Cycle: 0x0000000000000000
+        Last Read Latch Cycle: 0x0000000000000000
+        Format Track state:
+          Written Sector Address Fields: 0x0000
+          Write Track Start Index: 0x0000
+          Write Track Wrapped: false
+          Write Data Field Prologue Count: 0x00
+          Track State: 0x00
+          Last 3 bytes: 0x000000
+          Vol,Trk,Sec,Chk (4 and 4): 0x0000000000000000
+          Index (4 and 4): 0x0
+        Unit0:
+          Filename: sherwood_forest.zip
+          Track: 0
+          Phase: 0
+          Byte: 0x0000
+          Write Protected: false
+          Spinning: 0
+          Write Light: 0
+          Nibbles: 0x0000
+          Track Image Data: 0
+          Track Image Dirty: 0
+        Unit1:
+          Filename: ""
+          Track: 0
+          Phase: 0
+          Byte: 0x0000
+          Write Protected: false
+          Spinning: 0
+          Write Light: 0
+          Nibbles: 0x0000
+          Track Image Data: 0
+          Track Image Dirty: 0
+...

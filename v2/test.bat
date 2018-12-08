@@ -41,6 +41,8 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\Tests-Various.aws.yaml
 %1\applewin -log -load-state %~dp0\TK3000e.aws.yaml
 %1\applewin -log -load-state "%~dp0\Gemstone Warrior.aws.yaml"
+%1\applewin -log -load-state "%~dp0\Sherwood Forest.aws.yaml"
+%1\applewin -log -load-state %~dp0\Ultima-V.aws.yaml
 %1\applewin -log -load-state %~dp0\NoSlotClockTest.aws.yaml
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"

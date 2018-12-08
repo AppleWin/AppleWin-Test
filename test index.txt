@@ -130,6 +130,13 @@ Gemstone Warrior.aws.yaml
   . GH#389: Test that disk's write-protect status can be read with drive off
   . GH#395: Test that LC write-enabled state is maintained after STA $C083
 
+Sherwood Forest.aws.yaml
+. Test reading data when drive is off (but still spinning).
+. Also test .zip support
+
+Ultima-V.aws.yaml
+. GH#599: Test waiting for drive to stop spinning in Authentic Disk Speed mode.
+ 
 NoSlotClockTest.aws.yaml
 . Test NSC
 . Code is in the middle of reading date/time from NSC
