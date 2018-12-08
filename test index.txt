@@ -23,18 +23,6 @@ Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 archon_i.aws.yaml
 . Archon title screen, snapshot mid-tune (speaker)
 
-A2.aws.yaml
-. Apple][
-
-A2+.aws.yaml
-. Apple][+
-
-A2e.aws.yaml
-. Apple//e
-
-A2e-enhanced.aws.yaml
-. Enhanced Apple//e
-
 A2e-internal-C4nn-with-mousecard-(self test).aws.yaml
 . GH#381: Test when internal ROM is enabled at $C400, mouse-card is inserted and PC is in range [$C400..FF]
 dazzledraw1-mouse-rom-page0.aws.yaml
@@ -210,6 +198,31 @@ RamWorks_r4.aws.yaml
 . Test RamWorks card
 . Use gid's 64K bank counting code (ref: https://groups.google.com/d/msg/comp.emulators.apple2/C62pO09U2og/MhrRZH14AgAJ, 1st May 2017)
 . NB. Need to improve this to verify that the memory in all aux banks has been correctly restored
+
+=================================================
+
+Video ROM:
+----------
+
+A2.aws.yaml
+. Apple][
+
+A2+.aws.yaml
+. Apple][+
+
+A2e.aws.yaml
+. Apple//e
+
+A2e-enhanced.aws.yaml
+. Enhanced Apple//e
+
+A2+.aws.yaml
+. Apple][+ with 2K pig font video ROM
+
+A2e-enhanced.aws.yaml
+. Enhanced Apple//e: 4K, 8K and 16K video ROMs
+	- Space to toggle Alt Char set
+	- F10 to toggle rocker switch
 
 =================================================
 
