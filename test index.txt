@@ -22,6 +22,8 @@ Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 
 archon_i.aws.yaml
 . Archon title screen, snapshot mid-tune (speaker)
+. GH#616: RGB (Color Monitor) & vertical blend
+. RGB (Color Monitor) & no vertical blend
 
 A2e-internal-C4nn-with-mousecard-(self test).aws.yaml
 . GH#381: Test when internal ROM is enabled at $C400, mouse-card is inserted and PC is in range [$C400..FF]
@@ -141,6 +143,9 @@ NoSlotClockTest.aws.yaml
 . Test NSC
 . Code is in the middle of reading date/time from NSC
 . NB. Use ProDOS command "- NS.CLOCK.UTILS"
+
+AppleColorCard-slideshow-lake.aws.yaml
+. GH#621: Test support for AppleColor card's 160-color pixel video mode
 
 SSC-TCP-IN#2.aws.yaml
 . Test save-state SSC unit v1

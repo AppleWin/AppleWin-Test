@@ -8,7 +8,8 @@
 %1\applewin -log -load-state %~dp0\audit-A2e-enhanced.aws.yaml
 CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml -alt-enter=open-apple-enter
-%1\applewin -log -load-state %~dp0\archon_i.aws.yaml
+%1\applewin -log -load-state %~dp0\archon_i.aws.yaml -video-mode=rgb-monitor -video-style=vertical-blend
+%1\applewin -log -load-state %~dp0\archon_i.aws.yaml -video-mode=rgb-monitor -video-style=no-vertical-blend
 %1\applewin -log -load-state "%~dp0\A2e-internal-C4nn-with-mousecard-(self test).aws.yaml"
 %1\applewin -log -load-state %~dp0\dazzledraw1-mouse-rom-page0.aws.yaml
 %1\applewin -log -load-state %~dp0\dazzledraw1-mouse-rom-page6.aws.yaml
@@ -44,6 +45,7 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state "%~dp0\Sherwood Forest.aws.yaml"
 %1\applewin -log -load-state %~dp0\Ultima-V.aws.yaml
 %1\applewin -log -load-state %~dp0\NoSlotClockTest.aws.yaml
+%1\applewin -log -load-state %~dp0\AppleColorCard-slideshow-lake.aws.yaml -video-mode=rgb-monitor
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"
 %1\applewin -log -d1 %~dp0\AS-S2.dsk -s7 empty
