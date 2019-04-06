@@ -88,6 +88,7 @@ MB-Poll-IFR-Test2.aws.yaml
 
 dazzledraw1.aws.yaml
 . Test: mouse
+. Test: RGB DHGR MIX mode
 
 FANTAVISION.aws.yaml
 . Test: mouse
