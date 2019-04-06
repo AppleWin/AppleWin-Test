@@ -90,6 +90,9 @@ dazzledraw1.aws.yaml
 . Test: mouse
 . Test: RGB DHGR MIX mode
 
+dragon_wars.aws.yaml
+. Test: RGB DHGR MIX mode, invert bit7 (GH#633)
+
 FANTAVISION.aws.yaml
 . Test: mouse
 
