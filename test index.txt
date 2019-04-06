@@ -246,7 +246,4 @@ v1: Info about each test:
 -------------------------
 
 Boulderdash1-level-L1-bonus.aws
-. Test loading of old .aws snapshot (64K)
-
-Maniac Mansion(entrance-hall-near-clock).aws"
-. Test loading of old .aws snapshot (128K)
+. Test loading of old .aws snapshot: message box saying to use AppleWin 1.27
