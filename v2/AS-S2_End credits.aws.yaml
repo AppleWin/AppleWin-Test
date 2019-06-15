@@ -32,7 +32,7 @@ Unit:
     Video:
       Alt Char Set: false
       Video Mode: 0x0000000B
-      Cycles This Frame: 7126
+      Cycles This Frame: 7125
     Memory:
       Memory Mode: 0x00000631
       Last RAM Write: 1
