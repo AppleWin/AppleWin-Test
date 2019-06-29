@@ -48,6 +48,13 @@ AS-S1_Turn the disk over.aws.yaml
 AS-S2_End credits.aws.yaml
 . Horizontal DLORES/TEXT80 split
 
+OMT.dsk -60hz
+. GH#648: 60Hz/NTSC - correctly fails with "KO" message
+
+OMT-PAL.aws.yaml
+. GH#648: 50Hz/PAL
+. GH#652: TIMER1 period=N+2
+
 AZTEC.aws.yaml
 . GH#347: Test speed of Aztec loading until "PRESS ANY KEY" message
 . Check AppleWin.log for: (~2500ms for Win7-64, AMD Phenom II dual-core @3GHz)
