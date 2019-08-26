@@ -14,6 +14,9 @@ audit-A2e-enhanced.aws.yaml
 . Test LC, internal ROM soft switches, etc
 . NB. "audit-A2+-Saturn.aws.yaml" will have LC errors, as Saturn is different to the Apple LC.
 
+irq-pending.aws.yaml
+. GH#677: Test loading a save-state with a MB Timer1 interrupt pending
+
 Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 . GH#556: Test Hook Filter ie. emulator can detect these: ALT+ESC, ALT+SPACE, ALT+TAB
 . GH#556: Test: -alt-enter=open-apple-enter

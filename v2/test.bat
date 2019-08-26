@@ -7,6 +7,7 @@
 %1\applewin -log -load-state %~dp0\audit-A2e.aws.yaml
 %1\applewin -log -load-state %~dp0\audit-A2e-enhanced.aws.yaml
 CALL "v2\Video ROM\test.bat" %~1
+%1\applewin -log -load-state %~dp0\irq-pending.aws.yaml
 %1\applewin -log -load-state %~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml -alt-enter=open-apple-enter
 %1\applewin -log -load-state %~dp0\archon_i.aws.yaml -video-mode=rgb-monitor -video-style=no-vertical-blend
 %1\applewin -log -load-state %~dp0\archon_i.aws.yaml -video-mode=rgb-monitor -video-style=vertical-blend
