@@ -1,0 +1,198 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "SmartPort-page-cross", plain
+!sl "SmartPort-page-cross.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+!source "HardDiskDefs.a"
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+entrypoint:	
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	; init $6800-69FF & $6A00-6BFF
+	lda 	#0
+	sta		$fe
+	lda		#$68
+	sta		$ff
+	ldy		#0
+	lda		#0
+	ldx		#4		; 4x 256 pages = 2x 512 blocks
+	clc
+-			sta		($fe),y
+			adc		#1
+			iny
+			bne		-
+		inc		$ff
+		dex
+		bne		-
+
+	;
+	; load block-0 to $6800, non page-cross
+	;
+
+	lda		#$68
+	sta		param_mem_block_h
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0_0	!byte	CMD_READ
+mli0_1	!byte	<param	; param_l
+mli0_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp error_read_non_px
++	
+	lda		#$6a
+	sta		param_mem_block_h
+	jmp 	load_block_px
+
+	;
+	; load block-0 to $6A00, page-cross
+	;
+
+*=$60fd
+load_block_px
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli1_0	!byte	CMD_READ
+mli1_1	!byte	<param	; param_l
+mli1_2	!byte	>param	; param_h
+!zone code
+	bcs		error_read_px
+
+	;
+	; compare $6800 & $6A00
+	;
+
+	lda 	#0
+	sta		$fc
+	lda		#$68
+	sta		$fd
+
+	lda 	#0
+	sta		$fe
+	lda		#$6a
+	sta		$ff
+
+	ldy		#0
+	ldx		#2		; 2x 512 blocks
+-			lda		($fc),y
+			cmp		($fe),y
+			bne		error_compare
+			iny
+			bne		-
+		inc		$fd
+		inc		$ff
+		dex
+		bne		-
+
+	;
+
+success:
+	lda		#<msg0
+	sta		$fe
+	lda		#>msg0
+	sta		$ff
+	jsr		print
+	jmp		done
+
+error_compare:
+	lda		#<msg1
+	sta		$fe
+	lda		#>msg1
+	sta		$ff
+	jsr		print
+	jmp		done
+
+error_read_non_px:
+	lda		#<msg2
+	sta		$fe
+	lda		#>msg2
+	sta		$ff
+	jsr		print
+	jmp		done
+
+error_read_px:
+	lda		#<msg3
+	sta		$fe
+	lda		#>msg3
+	sta		$ff
+	jsr		print
+
+	;
+
+done:
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	rts
+
+;--------------------------------------
+
+; Pre: ($FE) = msg
+print
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+saveFC:			!byte 0
+saveFD:			!byte 0
+saveFE:			!byte 0
+saveFF:			!byte 0
+
+param
+	!byte	3	; param length
+	!byte	0	; unit
+	!byte	0	; mem_block_l
+param_mem_block_h
+	!byte	0	; mem_block_h
+	!byte	0	; disk_block_l
+	!byte	0	; disk_block_h
+
+msg0 !text "SmartPort firmware's page-cross support is OK!",0xd,0xa
+msg0End !text 0
+
+msg1 !text "Comparison error for block-0 (non-PX vs PX)!",0xd,0xa
+msg1End !text 0
+
+msg2 !text "Read error: block-0 (non-PX)!",0xd,0xa
+msg2End !text 0
+
+msg3 !text "Read error: block-0 (PX)!",0xd,0xa
+msg3End !text 0
