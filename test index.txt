@@ -17,6 +17,9 @@ audit-A2e-enhanced.aws.yaml
 irq-pending.aws.yaml
 . GH#677: Test loading a save-state with a MB Timer1 interrupt pending
 
+SmartPort-page-cross.aws.yaml
+. GH#319: Test SmartPort (HDD) firmware when MLI crosses page
+
 Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 . GH#556: Test Hook Filter ie. emulator can detect these: ALT+ESC, ALT+SPACE, ALT+TAB
 . GH#556: Test: -alt-enter=open-apple-enter
