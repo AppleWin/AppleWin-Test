@@ -10,7 +10,7 @@ audit-A2+-LC.aws.yaml
 audit-A2+-Saturn.aws.yaml
 audit-A2e.aws.yaml
 audit-A2e-enhanced.aws.yaml
-. https://github.com/zellyn/a2audit 1.04
+. https://github.com/zellyn/a2audit 1.06
 . Test LC, internal ROM soft switches, etc
 . NB. "audit-A2+-Saturn.aws.yaml" will have LC errors, as Saturn is different to the Apple LC.
 
@@ -132,6 +132,7 @@ Pravets8M.aws.yaml
 
 Prince of Persia.aws.yaml
 . Test 800KiB 3.5" image
+. NB. 6502.PC is in $C7nn firmware (so take care if firmware is updated in the future, eg. GH#319)
 
 Tests-Various.aws.yaml
 . Minimal .aws.yaml file (just wrapper around .dsk)
