@@ -181,6 +181,11 @@ SSC-TCP-tx-rx-tcp.aws.yaml
 . Test DSR, DCD
 . NB. Can also switch from TCP to COM, and repeat tests for Serial COM port
 
+SSC-COM2-tx-rx-tcp.aws.yaml
+. same as SSC-TCP-tx-rx-tcp.aws.yaml, except COM2 instead of TCP.
+. Added for GH#707.
+. NB. Can use com0com virtual serial port pair, so that test can be done wholly on local PC.
+
 cmd line switches:
 . GH#398:
 	. -d1, -s7 empty

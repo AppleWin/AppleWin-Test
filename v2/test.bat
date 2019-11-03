@@ -53,6 +53,7 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\AppleColorCard-slideshow-lake.aws.yaml -video-mode=rgb-monitor
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"
+%1\applewin -log -load-state "%~dp0\SSC-COM2-tx-rx-tcp.aws.yaml"
 %1\applewin -log -d1 %~dp0\AS-S2.dsk -s7 empty
 %1\applewin -log -d1 %~dp0\AS-S1.dsk -d2 "%~dp0\AS-S2.dsk"
 %1\applewin -log -h1 %~dp0\GNR-FINAL.2mg.gz
