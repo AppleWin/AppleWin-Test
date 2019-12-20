@@ -58,6 +58,7 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -d1 %~dp0\AS-S1.dsk -d2 "%~dp0\AS-S2.dsk"
 %1\applewin -log -h1 %~dp0\GNR-FINAL.2mg.gz
 %1\applewin -log -h1 "%~dp0\Prince of Persia (Original 3.5 floppy for IIc+).2mg" -h2 %~dp0\GNR-FINAL.2mg.gz
+%1\applewin -log -model apple2ee -s5 diskii -s5d1 %~dp0\phasor1.dsk -s5d2 %~dp0\phasor2.dsk -s6d1 %~dp0\cybernoid.dsk -s6d2 %~dp0\mbtest-poll.po
 CALL v2\Memory\test.bat %~1
 CALL v2\DiskFormat\test.bat %~1
 @ECHO Done v2 tests

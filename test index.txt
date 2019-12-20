@@ -192,6 +192,8 @@ cmd line switches:
 	. -d1, -d2
 	. -h1
 	. -h1, -h2
+. GH#726: (2nd DiskII card)
+	. -s5 diskii -s5d1, -s5d2, -s6d1, -s6d2
 
 =================================================
 
