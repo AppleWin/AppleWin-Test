@@ -1,0 +1,439 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "6522-one-shot", plain
+!sl "6522-one-shot.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+!source "MockingboardDefs.a"
+
+;------------------------------------------------------------------------------
+
+MBBase	= $fc		; Mockingboard base (only used in INIT - not in INTERRUPT)
+MBBaseL	= MBBase
+MBBaseH	= MBBase+1
+
+
+!zone code
+
+entrypoint:
+	sei
+
+	lda		#0
+	sta		irqTimer1Flag
+
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	;
+
+	jsr		SF_GetMBSlot
+	bne		+
+
+		; MB not found!
+		lda		#<msg_NoMB
+		sta		$fe
+		lda		#>msg_NoMB
+		sta		$ff
+		jsr		print
+		jmp		exit
+
++
+	; Setup correct address in IRQ handler code:
+	stx		MBIRQ1+2
+	stx		MBIRQ2+2
+	stx		MBIRQ1b+2
+	stx		MBIRQ1c+2
+
+	lda		#<Interrupt				; ADDR_L
+	sta		IRQL
+	lda		#>Interrupt				; ADDR_H 
+	sta		IRQH
+
+	lda		#0
+	sta		$400	; T1 IRQ (L)
+	sta		$401	; T1 IRQ (H)
+	sta		$414	; T2 IRQ (L)
+	sta		$415	; T2 IRQ (H)
+	sta		$426	; Other IRQ (L)
+	sta		$427	; Other IRQ (H)
+
+	;--------------
+	; Test#1 (GH#765)
+	; . Enable T1 & T2 IRQs, but don't write to T1H_C
+	; . Wait for T1 underflow
+	; . Check no T1|T2 ints are pending
+	; NB. Only runs OK after a MB card reset, or T1 has been set to one-shot mode
+
+	lda		#$fd
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Enable Timer1&2 IRQ
+	lda		#$02
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Disable speech IRQ
+
+t1_wait_00nn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		bne		t1_wait_00nn
+
+	ldy		#SY6522_IFR
+	lda		(MBBase),y
+	and		#(1<<6)|(1<<5)		; Poll Timer1&2 IRQ flag
+	beq		+
+		brk
++
+t1_wait_FFnn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		beq		t1_wait_FFnn
+
+	ldy		#SY6522_IFR
+	lda		(MBBase),y
+	and		#(1<<6)|(1<<5)		; Poll Timer1&2 IRQ flag
+	beq		+
+		brk
++
+
+	;--------------
+	; Test#2
+	; . Setup T1_C=0xffff and ACR=free-running
+	; . Enable T1 & T2 IRQs
+	; . Poll for T1 int
+	; . ACR=one-shot
+	; . CLI & expect ISR to immediately set flag (T1 free-running)
+	; . wait for ISR to set flag (T1 one-shot)
+	; . SEI & wait for T1 underflow & check that no T1|T2 ints pending
+
+	lda		#$ff
+	ldy		#SY6522_TIMER1L_COUNTER
+	sta		(MBBase),y
+	lda		#$ff
+	ldy		#SY6522_TIMER1H_COUNTER
+	sta		(MBBase),y
+
+	lda		#1<<6
+	ldy		#SY6522_ACR
+	sta		(MBBase),y				; Free-running timer
+
+	lda		#$80+$40+$20
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Enable Timer1&2 IRQ
+	eor		#$ff
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Disable all other IRQs
+
+t2_wait_irq
+		ldy		#SY6522_IFR
+		lda		(MBBase),y
+		and		#1<<6				; Poll Timer1 IRQ flag
+		beq		t2_wait_irq
+
+	lda		#0
+	ldy		#SY6522_ACR
+	sta		(MBBase),y				; One-shot timer
+
+	cli
+	nop								; 1 insn for IRQ (6502 pipelining)
+
+	lda		irqTimer1Flag			; T1 int from free-running mode
+	bne		+
+		brk
++
+	lda		#0
+	sta		irqTimer1Flag
+
+t2_wait_irq2						; T1 int from one-shot mode
+		lda		irqTimer1Flag
+		beq		t2_wait_irq2
+
+	sei
+
+t2_wait_00nn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		bne		t2_wait_00nn
+
+t2_wait_FFnn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		beq		t2_wait_FFnn
+
+	ldy		#SY6522_IFR
+	lda		(MBBase),y
+	and		#(1<<6)|(1<<5)		; Poll Timer1&2 IRQ flag
+	beq		+
+		brk
++
+
+	;--------------
+	; Test#3 (GH#567)
+	; . Setup T1_C=0xffff and ACR=free-running
+	; . Disable T1 IRQ, enable T2 IRQ
+	; . Poll for T1 int
+	; . CLI & expect ISR to immediately set flag
+
+	sei
+
+	lda		#0
+	sta		irqTimer1Flag
+
+	lda		#$ff
+	ldy		#SY6522_TIMER1L_COUNTER
+	sta		(MBBase),y
+	lda		#$ff
+	ldy		#SY6522_TIMER1H_COUNTER
+	sta		(MBBase),y
+
+	lda		#1<<6
+	ldy		#SY6522_ACR
+	sta		(MBBase),y				; Free-running timer
+
+	lda		#$80+$20
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Enable Timer2 IRQ
+	lda		#$40
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Disable Timer1 IRQ
+	
+	cli
+
+t3_wait_irq
+		ldy		#SY6522_IFR
+		lda		(MBBase),y
+		and		#1<<6				; Poll Timer1 IRQ flag
+		beq		t3_wait_irq
+
+	lda		#$80+$40
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Enable Timer1 IRQ
+
+	nop								; 1 insn for IRQ (6502 pipelining)
+
+	lda		irqTimer1Flag
+	bne		+
+		brk
++
+
+	;--------------
+	; Done
+	;--------------
+
+	lda		#<msg0
+	sta		$fe
+	lda		#>msg0
+	sta		$ff
+	jsr		print
+
+	lda 	$c010
+
+	lda		#0
+	ldy		#SY6522_ACR
+	sta		(MBBase),y				; T1 one-shot mode
+
+ex_wait_00nn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		bne		ex_wait_00nn
+
+ex_wait_FFnn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		beq		ex_wait_FFnn
+
+	lda		#1<<6
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Disable Timer1 IRQ
+	ldy		#SY6522_IFR
+	sta		(MBBase),y				; Clear any Timer1 IRQ
+
+exit:
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	cli
+	rts
+
+;--------------------------------------
+
+; Pre: ($FE) = msg
+print
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;--------------------------------------
+
+; Skyfox MB detection routine:
+
+SF_GetMBSlot:
+; Pre:
+; Post:
+;  Z = 0 (NE) : MB detected
+;  X = HI(MB base address)
+;  (MBBase) = MB slot address
+;
+
+	jsr		SF_Detect
+
+.Loop:	stx		$ff
+		jsr		SF_Detect
+		cpx		$ff
+		bne		.Loop
+
+	cpx		#$C8
+	rts
+
+;
+
+SF_Detect:
+	lda		#0
+	sta		MBBaseL
+	lda		#$c1
+	sta		MBBaseH
+	ldx		#7
+
+.SlotNext:
+		ldy		#$00+SY6522_TIMER1L_COUNTER
+		jsr		SF_GetTimerL
+		bne		.SlotLoop
+
+		ldy		#$80+SY6522_TIMER1L_COUNTER
+		jsr		SF_GetTimerL
+		beq		.SlotDone
+
+.SlotLoop:
+		inc		MBBaseH
+		dex
+		bne		.SlotNext
+
+.SlotDone:
+	ldx		MBBaseH
+	rts
+
+;
+
+
+SF_GetTimerL:
+	lda		(MBBase),y
+	cmp		MBBaseL
+	sbc		(MBBase),y
+	cmp		#$08
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+irqTimer1Flag:	!byte 0
+saveFC:			!byte 0
+saveFD:			!byte 0
+saveFE:			!byte 0
+saveFF:			!byte 0
+
+msg0 !text "MB tests passed",0xd,0xa
+msg0End !text 0
+
+msg_NoMB !text "No Mockingboard detected!",0xd,0xa
+msg_NoMBEnd !text 0
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+Interrupt:	
+; Pre:
+;	6502 has pushed P
+;	Apple ROM has stored A to $45 (not Apple //e ROM!)
+;
+
+	txa 
+	pha
+	tya
+	pha
+
+	;------
+
+MBIRQ1:
+	ldx		CARD_BASE+SY6522_IFR
+	txa
+	and		#1<<6
+	beq		.not_t1
+
+	lda		$400
+	clc
+	adc		#1
+	sta		$400
+	bne		+
+		inc		$401
++	jmp		.set_flag
+
+.not_t1
+	txa
+	and		#1<<5
+	beq		.not_t2
+
+	lda		$414
+	clc
+	adc		#1
+	sta		$414
+	bne		+
+		inc		$415
++	jmp		.set_flag
+
+.not_t2
+	lda		$426
+	clc
+	adc		#1
+	sta		$426
+	bne		+
+		inc		$427
++
+MBIRQ1b:
+	lda		CARD_BASE+SY6522_ORA	; clear CA1,CA2 irqs
+MBIRQ1c:
+	lda		CARD_BASE+SY6522_ORB	; clear CB1,CB2 irqs
+
+.set_flag
+	lda		#1
+	sta		irqTimer1Flag
+
+	lda		#1<<6
+MBIRQ2:	sta		CARD_BASE+SY6522_IFR	; Clear Timer1 IRQ flag
+
+	;------
+
+	pla
+	tay
+	pla
+	tax
+
+	lda		$45
+	rti
