@@ -179,8 +179,10 @@ t2_wait_FFnn
 	; Test#3 (GH#567)
 	; . Setup T1_C=0xffff and ACR=free-running
 	; . Disable T1 IRQ, enable T2 IRQ
+	; . CLI
 	; . Poll for T1 int
-	; . CLI & expect ISR to immediately set flag
+	; . Enable T1 IRQ
+	; . Expect ISR to immediately set flag
 
 	sei
 
