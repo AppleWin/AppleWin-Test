@@ -263,6 +263,9 @@ A2e-enhanced.aws.yaml
 	- Space to toggle Alt Char set
 	- F10 to toggle rocker switch
 
+II J+ video rom & custom rom
+EDM custom rom
+
 =================================================
 
 v1: Info about each test:
