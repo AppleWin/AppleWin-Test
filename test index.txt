@@ -249,6 +249,9 @@ A2.aws.yaml
 A2+.aws.yaml
 . Apple][+
 
+A2JPlus.aws.yaml
+. Apple][ J-Plus
+
 A2e.aws.yaml
 . Apple//e
 
@@ -263,8 +266,8 @@ A2e-enhanced.aws.yaml
 	- Space to toggle Alt Char set
 	- F10 to toggle rocker switch
 
-II J+ video rom & custom rom
-EDM custom rom
+Test 12KiB custom ROM: model=apple2p J-Plus video rom & custom rom
+Test 16KiB custom ROM: EDM custom rom
 
 =================================================
 

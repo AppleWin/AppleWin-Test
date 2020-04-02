@@ -2,6 +2,7 @@
 
 %1\applewin -log -load-state "%~dp0\A2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\A2+.aws.yaml"
+%1\applewin -log -load-state "%~dp0\A2JPlus.aws.yaml"
 %1\applewin -log -load-state "%~dp0\A2e.aws.yaml"
 %1\applewin -log -load-state "%~dp0\A2e-enhanced.aws.yaml"
 %1\applewin -log -videorom "%~dp0\Apple II+ - Pig Font Character Generator - 2716.bin" -load-state "%~dp0\A2+.aws.yaml"
