@@ -1,0 +1,407 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "AY8910-test", plain
+!sl "AY8910-test.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+!source "MockingboardDefs.a"
+
+;------------------------------------------------------------------------------
+
+MBBase	= $fc		; Mockingboard base (only used in INIT - not in INTERRUPT)
+MBBaseL	= MBBase
+MBBaseH	= MBBase+1
+
+
+!zone code
+
+entrypoint:
+	sei
+
+	lda		#0
+	sta		irqTimer1Flag
+
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	;
+
+	jsr		SF_GetMBSlot
+	bne		+
+
+		; MB not found!
+		lda		#<msg_NoMB
+		sta		$fe
+		lda		#>msg_NoMB
+		sta		$ff
+		jsr		print
+		jmp		exit
+
++
+	; Setup correct address in IRQ handler code:
+	stx		MBIRQ1+2
+	stx		MBIRQ2+2
+	stx		MBx1+2
+	stx		MBx2+2
+	stx		MBx3+2
+	stx		MBx4+2
+
+	lda		#<Interrupt				; ADDR_L
+	sta		IRQL
+	lda		#>Interrupt				; ADDR_H 
+	sta		IRQH
+
+	lda		#0
+	sta		ayEna+0
+	sta		ayEna+1
+
+	;--------------
+	; Test#1
+	; . Press 1-3 for AY0 channels A,B,C
+	; . Press 4-6 for AY1 channels A,B,C
+	; . ESC to quit
+
+	lda		#$07
+	ldy		#SY6522_DDRB
+	sta		(MBBase),y
+	ldy		#SY6522_DDRB+$80
+	sta		(MBBase),y
+
+	lda		#$ff
+	ldy		#SY6522_DDRA
+	sta		(MBBase),y
+	ldy		#SY6522_DDRA+$80
+	sta		(MBBase),y
+
+	ldx		#0
+	jsr		SF_ChipReset
+	ldx		#$80
+	jsr		SF_ChipReset
+
+	lda		#<ayregs_init
+	sta		$fe
+	lda		#>ayregs_init
+	sta		$ff
+
+	; Init both AYs' regs
+	ldy		#0
+	ldx		#0
+init_ayregs:
+			lda		($fe),y
+			jsr		SF_SelectReg
+			iny
+			lda		($fe),y
+			jsr		SF_WriteReg
+			dey
+
+		txa
+		eor		#$80
+		tax
+		bne		init_ayregs
+
+		iny
+		iny
+		cpy		#(AY_CVOL+1)*2
+		bne		init_ayregs
+
+	;
+
+	lda		#$ff
+	ldy		#SY6522_TIMER1L_COUNTER
+	sta		(MBBase),y
+	lda		#$ff
+	ldy		#SY6522_TIMER1H_COUNTER
+	sta		(MBBase),y
+
+	lda		#1<<6
+	ldy		#SY6522_ACR
+	sta		(MBBase),y				; Free-running timer
+
+	lda		#$80+$40
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Enable Timer1 IRQ
+
+	cli
+	
+	;
+
+loop	lda		$c000
+		bpl		loop
+	bit 	$c010
+	eor		#$80
+
+	cmp		#27		; ESC
+	beq		ay_done
+
+	cmp		#$31
+	bcc		loop	; <'1'
+	cmp		#$37
+	bcs		loop	; >='7'
+
+	ldx		#0
+	eor		#$30
+	cmp		#4
+	bcc		.ay_ena	; <'3'
+		sec
+		sbc		#3
+		inx
+
+.ay_ena	
+	tay
+	lda		#1
+	dey
+	beq		.ay_ena_done
+	asl
+	dey
+	beq		.ay_ena_done
+	asl
+
+.ay_ena_done
+	eor		ayEna,x		; toggle
+	sta		ayEna,x
+	jmp 	loop
+
+ay_done
+
+	;--------------
+	; Done
+	;--------------
+
+	lda		#<msg0
+	sta		$fe
+	lda		#>msg0
+	sta		$ff
+	jsr		print
+
+	lda		#0
+	ldy		#SY6522_ACR
+	sta		(MBBase),y				; T1 one-shot mode
+
+ex_wait_00nn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		bne		ex_wait_00nn
+
+ex_wait_FFnn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		beq		ex_wait_FFnn
+
+	lda		#1<<6
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Disable Timer1 IRQ
+	ldy		#SY6522_IFR
+	sta		(MBBase),y				; Clear any Timer1 IRQ
+
+exit:
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	cli
+	rts
+
+;--------------------------------------
+
+; Pre: ($FE) = msg
+print
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;--------------------------------------
+
+; Skyfox MB detection routine:
+
+SF_GetMBSlot:
+; Pre:
+; Post:
+;  Z = 0 (NE) : MB detected
+;  X = HI(MB base address)
+;  (MBBase) = MB slot address
+;
+
+	jsr		SF_Detect
+
+.Loop:	stx		$ff
+		jsr		SF_Detect
+		cpx		$ff
+		bne		.Loop
+
+	cpx		#$C8
+	rts
+
+;
+
+SF_Detect:
+	lda		#0
+	sta		MBBaseL
+	lda		#$c1
+	sta		MBBaseH
+	ldx		#7
+
+.SlotNext:
+		ldy		#$00+SY6522_TIMER1L_COUNTER
+		jsr		SF_GetTimerL
+		bne		.SlotLoop
+
+		ldy		#$80+SY6522_TIMER1L_COUNTER
+		jsr		SF_GetTimerL
+		beq		.SlotDone
+
+.SlotLoop:
+		inc		MBBaseH
+		dex
+		bne		.SlotNext
+
+.SlotDone:
+	ldx		MBBaseH
+	rts
+
+;
+
+
+SF_GetTimerL:
+	lda		(MBBase),y
+	cmp		MBBaseL
+	sbc		(MBBase),y
+	cmp		#$08
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+ayregs_init:	; reg#,value
+				!byte 7,$ff	; enable (1=disable)
+				!byte 0,0	; A tone_l
+				!byte 1,4	; A tone_h
+				!byte 2,0	; B tone_l
+				!byte 3,4	; B tone_h
+				!byte 4,0	; C tone_l
+				!byte 5,4	; C tone_h
+				!byte 6,0	; noise period
+				!byte 8,15	; A vol
+				!byte 9,15	; B vol
+				!byte 10,15	; C vol
+
+ayEna:			!byte 0,0	; 0=dis, 1=ena - NB. opposite to the real AY_ENA register!
+irqTimer1Flag:	!byte 0
+saveFC:			!byte 0
+saveFD:			!byte 0
+saveFE:			!byte 0
+saveFF:			!byte 0
+
+msg0 !text "MB tests passed",0xd,0xa
+msg0End !text 0
+
+msg_NoMB !text "No Mockingboard detected!",0xd,0xa
+msg_NoMBEnd !text 0
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+Interrupt:	
+; Pre:
+;	6502 has pushed P
+;	Apple ROM has stored A to $45 (not Apple //e ROM!)
+;
+
+	txa 
+	pha
+	tya
+	pha
+
+	;------
+
+MBIRQ1:
+	ldx		CARD_BASE+SY6522_IFR
+	txa
+	and		#1<<6
+	bne		.set_flag
+	brk
+
+.set_flag
+	lda		#1
+	sta		irqTimer1Flag
+
+	lda		#1<<6
+MBIRQ2:	sta		CARD_BASE+SY6522_IFR	; Clear Timer1 IRQ flag
+
+	;------
+
+	ldx		#0
+
+.ay_next	lda		#AY_ENABLE
+			jsr		SF_SelectReg
+			ldy		#0
+			txa
+			beq		.invert
+				iny
+.invert		lda		ayEna,y
+			eor		#$ff
+			jsr		SF_WriteReg
+
+		txa
+		eor		#$80
+		tax
+		bne		.ay_next
+
+	;------
+
+	pla
+	tay
+	pla
+	tax
+
+	lda		$45
+	rti
+
+;------------------
+
+SF_SelectReg:
+MBx1:	sta		CARD_BASE+SY6522_ORA,x
+		lda		#AY_LATCH
+		bne		.l675e
+
+SF_WriteReg:
+MBx2:	sta		CARD_BASE+SY6522_ORA,x
+		lda		#AY_WRITE
+		bne		.l675e
+
+SF_ChipReset:
+		lda		#AY_RESET
+
+.l675e:
+MBx3:	sta		CARD_BASE+SY6522_ORB,x
+		lda		#AY_INACTIVE
+MBx4:	sta		CARD_BASE+SY6522_ORB,x
+		rts

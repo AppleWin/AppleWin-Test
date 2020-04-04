@@ -1,0 +1,6 @@
+// PWD: <root>\AppleWin-Test\Projects\AY8910-test
+// run "debug.txt"
+bload "AY8910-test",6000
+
+asc msg0:msg0End
+asc msg_NoMB:msg_NoMBEnd
