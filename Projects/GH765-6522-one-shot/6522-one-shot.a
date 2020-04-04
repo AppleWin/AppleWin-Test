@@ -48,11 +48,10 @@ entrypoint:
 		jmp		exit
 
 +
-	; Setup correct address in IRQ handler code:
-	stx		MBIRQ1+2
-	stx		MBIRQ2+2
-	stx		MBIRQ1b+2
-	stx		MBIRQ1c+2
+
+	; Alternate between 6522 at $Cn00 and $Cx80
+	lda		select6522
+	sta		MBBaseL
 
 	lda		#<Interrupt				; ADDR_L
 	sta		IRQL
@@ -230,13 +229,18 @@ t3_wait_irq
 	; Done
 	;--------------
 
-	lda		#<msg0
-	sta		$fe
-	lda		#>msg0
+	lda		select6522
+	bne		+
+		ldx		#<msg0
+		lda		#>msg0
+		bne		msg		; branch always
++
+		ldx		#<msg1
+		lda		#>msg1
+msg
+	stx		$fe
 	sta		$ff
 	jsr		print
-
-	lda 	$c010
 
 	lda		#0
 	ldy		#SY6522_ACR
@@ -269,6 +273,18 @@ exit:
 	sta		$ff
 
 	cli
+
+	lda		$c000
+	bmi		exit2
+
+	; Switch to other 6522 for next test run
+	lda		select6522
+	eor		#$80
+	sta		select6522
+	jmp		entrypoint
+
+exit2:
+	bit		$c010
 	rts
 
 ;--------------------------------------
@@ -355,13 +371,17 @@ SF_GetTimerL:
 !zone data
 
 irqTimer1Flag:	!byte 0
+select6522:		!byte 0
 saveFC:			!byte 0
 saveFD:			!byte 0
 saveFE:			!byte 0
 saveFF:			!byte 0
 
-msg0 !text "MB tests passed",0xd,0xa
+msg0 !text "MB (6522 @ 0x00) tests passed",0xd,0xa
 msg0End !text 0
+
+msg1 !text "MB (6522 @ 0x80) tests passed",0xd,0xa
+msg1End !text 0
 
 msg_NoMB !text "No Mockingboard detected!",0xd,0xa
 msg_NoMBEnd !text 0
@@ -383,9 +403,9 @@ Interrupt:
 
 	;------
 
-MBIRQ1:
-	ldx		CARD_BASE+SY6522_IFR
-	txa
+	ldy		#SY6522_IFR
+	lda		(MBBase),y
+	tax
 	and		#1<<6
 	beq		.not_t1
 
@@ -418,17 +438,18 @@ MBIRQ1:
 	bne		+
 		inc		$427
 +
-MBIRQ1b:
-	lda		CARD_BASE+SY6522_ORA	; clear CA1,CA2 irqs
-MBIRQ1c:
-	lda		CARD_BASE+SY6522_ORB	; clear CB1,CB2 irqs
+	ldy		#SY6522_ORA
+	lda		(MBBase),y				; clear CA1,CA2 irqs
+	ldy		#SY6522_ORB
+	lda		(MBBase),y				; clear CB1,CB2 irqs
 
 .set_flag
 	lda		#1
 	sta		irqTimer1Flag
 
 	lda		#1<<6
-MBIRQ2:	sta		CARD_BASE+SY6522_IFR	; Clear Timer1 IRQ flag
+	ldy		#SY6522_IFR
+	sta		(MBBase),y				; Clear Timer1 IRQ flag
 
 	;------
 
