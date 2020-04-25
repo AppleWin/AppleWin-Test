@@ -134,7 +134,7 @@ testA
 	lda		#PH_MOCKINGBOARD
 	sta		phasorMode
 	jsr		SetPhasorMode
-	
+
 	lda		#1<<1
 	ldy		#SY6522_IER+SY6522_B_BASE
 	sta		(MBBase),y				; disable CA1(Speech) IRQ
@@ -161,7 +161,7 @@ testA
 
 	lda		#$FF
 	jsr		WAIT
-	
+
 	ldy		#SY6522_IFR+SY6522_B_BASE
 	lda		(MBBase),y
 	and		#1<<1					; check CA1(Speech) IRQ
@@ -173,7 +173,7 @@ testA
 		sta		$ff
 		jsr		print
 		jmp		exit
-	
+
 +	lda		#1<<1
 	ldy		#SY6522_IER+SY6522_B_BASE
 	sta		(MBBase),y				; disable CA1(Speech) IRQ
@@ -257,18 +257,17 @@ aaa1		stx		$400
 
 	jsr		SetPhasorMode
 
-!if 0 {
-	; Clear b7 of reg#2 (DDRB) - so that we can test reading SSI263 $Cn42
-	lda		#$00
-	ldy		#SY6522_DDRB
-	sta		(MBBase),y
-}
-
 	; CA handshake to clear SSI263 interrupt: CA1(irq) -> CA2(power-down)
 	lda		#$0C					; Peripheral for PA port Control: CA2 = low output (Pin18: Power Down/Reset)
 									; CA1 = negative active edge (input) (Pin4: A/!R)
 	ldy		#SY6522_PCR+SY6522_B_BASE
 	sta		(MBBase),y
+
+	; NB. For Test#3: IFR=$02 during the timeout in Test#2 (as CA1=input) - verified on real Phasor h/w
+	; So clear IFR.b1 here:
+	lda		#1<<1
+	ldy		#SY6522_IFR+SY6522_B_BASE
+	sta		(MBBase),y				; clear CA1(Speech) IRQ
 
 	; Warning: stepping this won't yield an IRQ, since the phoneme completes before H->L
 	lda		#MODE_PHONEME_TRANSITIONED_INFLECTION+$00	; DR1:DR0=3 , P5:P0=$00
@@ -372,7 +371,7 @@ aaa2		stx		$400
 }
 
 	lda		#$00					; Peripheral for PA port Control: CA2 = input (so don't PD/RST to SSI263)
-									; CA1 = input (as before)
+									; CA1 = input (as before), so for MB mode (Test#2) then IFR.b1 will be set when phoneme completes
 	ldy		#SY6522_PCR+SY6522_B_BASE
 	sta		(MBBase),y
 
