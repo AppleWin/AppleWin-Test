@@ -1,0 +1,6 @@
+// PWD: <root>\AppleWin-Test\Projects\GH777-SSI263-test
+// run "debug.txt"
+bload "SSI263-test",6000
+
+asc msg0:msg0End
+asc msg_NoMB:msg_NoMBEnd

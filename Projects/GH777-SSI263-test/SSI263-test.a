@@ -1,0 +1,845 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "SSI263-test", plain
+!sl "SSI263-test.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+!source "MockingboardDefs.a"
+
+;------------------------------------------------------------------------------
+
+MBBase	= $fc		; Mockingboard base (only used in INIT - not in INTERRUPT)
+MBBaseL	= MBBase
+MBBaseH	= MBBase+1
+
+
+!zone code
+
+entrypoint:
+	sei
+
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	;
+
+	jsr		SF_GetMBSlot
+	bne		+
+
+		; MB not found! (will fail if in Phasor mode - could change to check at $Cn10 & $Cn80)
+		lda		#<msg_NoMB
+		sta		$fe
+		lda		#>msg_NoMB
+		sta		$ff
+		jsr		print
+		jmp		exit
+
++	stx		ISR_MB0+2
+	stx		ISR_MB1+2
+	stx		ISR_MB2+2
+	stx		ISR_MB3+2
+	stx		ISR_MB4+2
+	stx		ISR_MB5+2
+
+	; Check r/w of all data lines
+	; (Include this, as my real Phasor occasionally powers-on with r/w to 2nd 6522's DDRA with b7=1!)
+	; For each 6522:
+	;   DDRB=$55
+	;   DDRA=$AA
+	;   check DDRB==$55
+	;   check DDRA==$AA
+	ldy		#SY6522_DDRB
+.data_chk
+		lda		#$55
+		sta		(MBBase),y
+		asl								; A=$AA
+		iny								; SY6522_DDRA
+		sta		(MBBase),y
+		dey								; SY6522_DDRB
+		lsr								; A=$55
+		cmp		(MBBase),y
+		bne		.data_err
+		iny								; SY6522_DDRA
+		asl								; A=$AA
+		cmp		(MBBase),y
+		bne		.data_err
+		dey								; SY6522_DDRB
+		tya
+		eor		#$80
+		tay
+		cmp		#SY6522_DDRB
+		bne		.data_chk
+	jmp		+
+
+.data_err
+
+		; 6522 data write/read error!
+		lda		#<msg_DataError
+		sta		$fe
+		lda		#>msg_DataError
+		sta		$ff
+		jsr		print
+		jmp		exit
+
++
+	; Determine if this is a Mockingboard or Phasor card
+	lda		#PH_PHASOR
+	sta		phasorMode
+	jsr		SetPhasorMode
+
+	lda		#0
+	sta		isPhasorCard			; assume Mockingboard
+
+	; Phasor card in Phasor mode has floating-bus at $Cn00-$Cn0F
+	ldy		#SY6522_DDRB
+	lda		#$55
+	cmp		(MBBase),y
+	bne		+
+	asl								; A=$AA
+	iny								; SY6522_DDRA
+	cmp		(MBBase),y
+	bne		+
+	ldy		#SY6522_TIMER1L_COUNTER
+	jsr		SF_GetTimerL
+	beq		setup
++	inc		isPhasorCard
+
+setup
+	lda		#0
+	sta		testNum
+	sta		irqMBIdx
+
+	lda		#$20					; Write ISR entry/exit log data to $2000...
+	sta		irqMBBaseH
+
+	lda		#<Interrupt				; ADDR_L
+	sta		IRQL
+	lda		#>Interrupt				; ADDR_H 
+	sta		IRQH
+
+	;==================================
+	; Test: Mockingboard Speech using 6522 PCR w/o IRQ (Willy Byte's SSI263 detection code)
+	;==================================
+testA
+	lda		#PH_MOCKINGBOARD
+	sta		phasorMode
+	jsr		SetPhasorMode
+	
+	lda		#1<<1
+	ldy		#SY6522_IER+SY6522_B_BASE
+	sta		(MBBase),y				; disable CA1(Speech) IRQ
+	ldy		#SY6522_IFR+SY6522_B_BASE
+	sta		(MBBase),y				; clear CA1(Speech) IRQ
+
+	lda		#$0C					; Peripheral for PA port Control: CA2 = low output (Pin18: Power Down/Reset)
+									; CA1 = negative active edge (input) (Pin4: A/!R)
+	ldy		#SY6522_PCR+SY6522_B_BASE
+	sta		(MBBase),y
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	; Warning: stepping this won't yield an IRQ, since the phoneme completes before H->L (assuming prev mode=MODE_IRQ_DISABLED)
+	lda		#MODE_PHONEME_TRANSITIONED_INFLECTION+$00	; DR1:DR0=3 , P5:P0=$00
+	ldy		#SSI_DURPHON
+	sta		(MBBase),y
+
+	lda		#$70					; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active (also set Articulation=7)
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#$FF
+	jsr		WAIT
+	
+	ldy		#SY6522_IFR+SY6522_B_BASE
+	lda		(MBBase),y
+	and		#1<<1					; check CA1(Speech) IRQ
+	bne		+
+
+		lda		#<msg_NoSSI263_MB
+		sta		$fe
+		lda		#>msg_NoSSI263_MB
+		sta		$ff
+		jsr		print
+		jmp		exit
+	
++	lda		#1<<1
+	ldy		#SY6522_IER+SY6522_B_BASE
+	sta		(MBBase),y				; disable CA1(Speech) IRQ
+	ldy		#SY6522_IFR+SY6522_B_BASE
+	sta		(MBBase),y				; clear CA1(Speech) IRQ
+
+	jsr		DisableSSI263
+
+	;==================================
+	; Test: Phasor Speech using SSI263.D7 w/o IRQ
+	;==================================
+testB
+	lda		isPhasorCard
+	beq		testB_done
+
+	lda		#PH_PHASOR
+	sta		phasorMode
+	jsr		SetPhasorMode
+
+	lda		#$00					; Peripheral for PA port Control: CA2 = input (so don't PD/RST to SSI263)
+									; CA1 = input (as before)
+	ldy		#SY6522_PCR+SY6522_B_BASE
+	sta		(MBBase),y
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	; Warning: stepping this won't yield an IRQ, since the phoneme completes before H->L (assuming prev mode=MODE_IRQ_DISABLED)
+	lda		#MODE_PHONEME_TRANSITIONED_INFLECTION+$00	; DR1:DR0=3 , P5:P0=$00
+	ldy		#SSI_DURPHON
+	sta		(MBBase),y
+
+	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active (also set Articulation=7)
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#$FF
+	jsr		WAIT
+
+	ldy		#SSI_BASE
+	lda		(MBBase),y
+	and		#1<<7
+	bne		+
+
+		lda		#<msg_NoSSI263_Phasor
+		sta		$fe
+		lda		#>msg_NoSSI263_Phasor
+		sta		$ff
+		jsr		print
+		jmp		exit
+
++	jsr		DisableSSI263
+
+testB_done
+	lda		#PH_MOCKINGBOARD		; prep for test1
+	sta		phasorMode
+
+	;==================================
+	; Test: Speech using 6522 PCR
+	;==================================
+	; . Test#1 - Mockingboard mode
+	; . Test#3 - Phasor mode
+test1
+	sei
+	inc		testNum
+
+!if 1 {
+	; Pre-fill TEXT1, so that floating bus values all have b7=0
+	lda		#4
+	sta		aaa1+2
+	ldx		testNum
+aaa1		stx		$400
+			inc		aaa1+1
+			bne		aaa1
+		inc		aaa1+2
+		lda		aaa1+2
+		cmp		#8
+		bne		aaa1
+}
+
+	jsr		SetPhasorMode
+
+!if 0 {
+	; Clear b7 of reg#2 (DDRB) - so that we can test reading SSI263 $Cn42
+	lda		#$00
+	ldy		#SY6522_DDRB
+	sta		(MBBase),y
+}
+
+	; CA handshake to clear SSI263 interrupt: CA1(irq) -> CA2(power-down)
+	lda		#$0C					; Peripheral for PA port Control: CA2 = low output (Pin18: Power Down/Reset)
+									; CA1 = negative active edge (input) (Pin4: A/!R)
+	ldy		#SY6522_PCR+SY6522_B_BASE
+	sta		(MBBase),y
+
+	; Warning: stepping this won't yield an IRQ, since the phoneme completes before H->L
+	lda		#MODE_PHONEME_TRANSITIONED_INFLECTION+$00	; DR1:DR0=3 , P5:P0=$00
+	ldy		#SSI_DURPHON
+	sta		(MBBase),y
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#$ff
+	ldy		#SY6522_TIMER1L_COUNTER+SY6522_A_PH_BASE
+	sta		(MBBase),y
+	lda		#$ff
+	ldy		#SY6522_TIMER1H_COUNTER+SY6522_A_PH_BASE
+	sta		(MBBase),y
+
+	lda		#1<<6
+	ldy		#SY6522_ACR+SY6522_A_PH_BASE
+	sta		(MBBase),y				; Free-running timer
+
+	lda		#$80+$40
+	ldy		#SY6522_IER+SY6522_A_PH_BASE
+	sta		(MBBase),y				; Enable Timer1 IRQ
+
+	lda		#$80+$02
+	ldy		#SY6522_IER+SY6522_B_BASE
+	sta		(MBBase),y				; Enable CA1(Speech) IRQ
+
+	lda		#4
+	sta		irqTimer1Timeout
+	lda		#0
+	sta		irqTimer1Flag
+	sta		irqSpeechMBFlag
+	sta		irqSpeechPHFlag
+	sta		irqCount
+	sta		irqCount+1
+
+	cli
+
+-		lda		irqTimer1Flag
+		ora		irqSpeechMBFlag
+		ora		irqSpeechPHFlag
+		bne		+
+		lda		$c000
+		bpl		-
+
++	sei
+	bit 	$c010
+	jsr		DisableSSI263
+
+	;
+
+	lda		#PH_PHASOR
+	cmp		phasorMode
+	beq		+
+
+		; MB mode: (irqSpeechMBFlag==1)
+		lda		irqTimer1Flag
+		ora		irqSpeechPHFlag
+		beq		test1_ok
+		bne		test1_ng
+		
++		; Phasor mode: (irqSpeechPHFlag==1)
+		lda		irqTimer1Flag
+		ora		irqSpeechMBFlag
+		beq		test1_ok
+
+test1_ng	lda		testNum				; test# that failed
+			; NB. must be sei, as BRK handler soon does PLP to restore prev I-flag
+			; . if T1 is still free-running, then T1 ints will continue to fire from monitor prompt!
+			brk
+
+test1_ok
+
+	;==================================
+	; Test: Speech using direct IRQ
+	;==================================
+	; . Test#2 - Mockingboard mode (must fail)
+	; . Test#4 - Phasor mode
+test2
+	sei
+	inc		testNum
+
+!if 1 {
+	; Pre-fill TEXT1, so that floating bus values all have b7=0
+	lda		#4
+	sta		aaa2+2
+	ldx		testNum
+aaa2		stx		$400
+			inc		aaa2+1
+			bne		aaa2
+		inc		aaa2+2
+		lda		aaa2+2
+		cmp		#8
+		bne		aaa2
+}
+
+	lda		#$00					; Peripheral for PA port Control: CA2 = input (so don't PD/RST to SSI263)
+									; CA1 = input (as before)
+	ldy		#SY6522_PCR+SY6522_B_BASE
+	sta		(MBBase),y
+
+	lda		#$02
+	ldy		#SY6522_IER+SY6522_B_BASE
+	sta		(MBBase),y				; Disable CA1(Speech) IRQ
+	ldy		#SY6522_IFR+SY6522_B_BASE
+	sta		(MBBase),y				; Clear any CA1(Speech) IRQ
+
+	; Warning: stepping this won't yield an IRQ, since the phoneme completes before H->L
+	lda		#MODE_PHONEME_TRANSITIONED_INFLECTION+$00	; DR1:DR0=3 , P5:P0=$00
+	ldy		#SSI_DURPHON
+	sta		(MBBase),y
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#$ff
+	ldy		#SY6522_TIMER1L_COUNTER+SY6522_A_PH_BASE
+	sta		(MBBase),y
+	lda		#$ff
+	ldy		#SY6522_TIMER1H_COUNTER+SY6522_A_PH_BASE
+	sta		(MBBase),y
+
+	lda		#1<<6
+	ldy		#SY6522_ACR+SY6522_A_PH_BASE
+	sta		(MBBase),y				; Free-running timer
+
+	lda		#$80+$40
+	ldy		#SY6522_IER+SY6522_A_PH_BASE
+	sta		(MBBase),y				; Enable Timer1 IRQ
+	ldy		#SY6522_IFR+SY6522_A_PH_BASE
+	sta		(MBBase),y				; Clear any Timer1 IRQ (b7 is ignored)
+
+	lda		#4
+	sta		irqTimer1Timeout
+	lda		#0
+	sta		irqTimer1Flag
+	sta		irqSpeechMBFlag
+	sta		irqSpeechPHFlag
+	sta		irqCount
+	sta		irqCount+1
+
+	cli
+
+-		lda		irqTimer1Flag
+		ora		irqSpeechMBFlag
+		ora		irqSpeechPHFlag
+		bne		+
+		lda		$c000
+		bpl		-
+
++	sei
+	bit 	$c010
+	jsr		DisableSSI263
+
+	;
+
+	lda		#PH_PHASOR
+	cmp		phasorMode
+	beq		+
+
+		; MB mode: (irqTimer1Flag==1)
+		lda		irqSpeechMBFlag
+		ora		irqSpeechPHFlag
+		beq		test2_ok
+		bne		test2_ng
+
++		; Phasor mode: (irqSpeechPHFlag==1)
+		lda		irqTimer1Flag
+		ora		irqSpeechMBFlag
+		beq		test2_ok
+		
+test2_ng	lda		testNum				; test# that failed
+			; NB. must be sei, as BRK handler soon does PLP to restore prev I-flag
+			; . if T1 is still free-running, then T1 ints will continue to fire from monitor prompt!
+			brk
+
+test2_ok
+
+	lda		isPhasorCard
+	beq		+
+
+	sei								; sei, as phasorMode is read by ISR
+	lda		#PH_PHASOR
+	cmp		phasorMode
+	beq		+
+	sta		phasorMode
+	jmp		test1
+
++
+
+	;--------------
+	; Done
+	;--------------
+
+	sei
+
+	lda		#<msg0
+	ldx		#>msg0
+	ldy		isPhasorCard
+	beq		+
+		lda		#<msg1
+		ldx		#>msg1
++	sta		$fe
+	stx		$ff
+	jsr		print
+
+	lda		MBBaseH
+	asl
+	asl
+	asl
+	asl								; slot * 16
+	clc
+	adc		#PH_MOCKINGBOARD
+	tax
+	lda		$c080,x					; Set MB mode
+
+	lda		#0
+	ldy		#SY6522_ACR
+	sta		(MBBase),y				; T1 one-shot mode
+
+ex_wait_00nn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		bne		ex_wait_00nn
+
+ex_wait_FFnn
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBBase),y
+		beq		ex_wait_FFnn
+
+	lda		#1<<6
+	ldy		#SY6522_IER
+	sta		(MBBase),y				; Disable Timer1 IRQ
+	ldy		#SY6522_IFR
+	sta		(MBBase),y				; Clear any Timer1 IRQ
+
+exit:
+	sei
+	lda		#<Interrupt_BRK			; ADDR_L
+	sta		IRQL
+	lda		#>Interrupt_BRK			; ADDR_H 
+	sta		IRQH
+	
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	cli
+	rts
+
+;------------------------------------------------------------------------------
+
+Interrupt_BRK:
+	brk
+
+;------------------------------------------------------------------------------
+
+Interrupt:
+; Pre:
+;	6502 has pushed P
+;	Apple ROM has stored A to $45 (not Apple //e ROM!)
+;
+
+	txa 
+	pha
+	tya
+	pha
+
+	;------
+
+	inc		irqCount+1
+	lda		irqCount+1
+	bne		+
+	inc		irqCount+0
++
+
+!if 1 {
+	ldy		irqMBIdx
+	lda		#0
+	sta		$fe
+	lda		irqMBBaseH
+	sta		$ff
+	;
+	lda		testNum
+	sta		($fe),y
+	iny
+ISR_MB0
+	lda		$c400+SY6522_IFR+SY6522_A_PH_BASE
+	sta		($fe),y
+	iny
+ISR_MB1
+	lda		$c400+SY6522_IFR+SY6522_B_BASE
+	sta		($fe),y
+	iny
+ISR_MB2
+	lda		$c400+SSI_BASE
+	sta		($fe),y
+	iny
+	bne		+
+		inc		irqMBBaseH
++
+	;
+	sty		irqMBIdx
+}
+
+	ldy		#SY6522_IFR+SY6522_A_PH_BASE
+	lda		(MBBase),y
+	and		#1<<6
+	beq		.check_speech_mb
+		sta		(MBBase),y		; Clear Timer1 IRQ flag
+		lda		irqTimer1Timeout
+		beq		+
+		sec
+		sbc		#1
+		sta		irqTimer1Timeout
+		bne		+
+			inc		irqTimer1Flag
++		jmp		.done
+
+.check_speech_mb
+	ldy		#SY6522_PCR+SY6522_B_BASE
+	lda		(MBBase),y
+	cmp		#$0C
+	bne		.check_speech_ph
+	ldy		#SY6522_IFR+SY6522_B_BASE
+	lda		(MBBase),y
+	and		#1<<1
+	beq		.check_speech_ph
+
+		ldy		#SY6522_IFR+SY6522_B_BASE
+		lda		#1<<1
+		sta		(MBBase),y		; Clear CA1(Speech) IRQ flag
+		inc		irqSpeechMBFlag
+		jmp		.done
+
+; Interrupt *must* for Phasor direct speech IRQ
+.check_speech_ph
+	lda		#PH_PHASOR
+	cmp		phasorMode
+	beq		+
+		brk
+
+	; NB. Only need to check any 1 single SSI263 reg, but we'll check all 8
++	ldy		#SSI_BASE			; A = SSI{reg0 AND reg1 AND ... reg7}
+	lda		#1<<7
+-		and		(MBBase),y
+		iny
+		cpy		#SSI_BASE+8
+		bne		-
+	and		#1<<7
+	bne		+
+		brk
+
+	; Warning: stepping this will yield an extra IRQ, since the phoneme completes before H->L
++	lda		#MODE_IRQ_DISABLED
+	ldy		#SSI_DURPHON		; disable irq
+	sta		(MBBase),y
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#CONTROL_L			; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ disabled
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	inc		irqSpeechPHFlag
+
+.done
+!if 1 {
+	ldy		irqMBIdx
+	lda		#0
+	sta		$fe
+	lda		irqMBBaseH
+	sta		$ff
+	;
+	lda		testNum
+	sta		($fe),y
+	iny
+ISR_MB3
+	lda		$c400+SY6522_IFR+SY6522_A_PH_BASE
+	sta		($fe),y
+	iny
+ISR_MB4
+	lda		$c400+SY6522_IFR+SY6522_B_BASE
+	sta		($fe),y
+	iny
+ISR_MB5
+	lda		$c400+SSI_BASE
+	sta		($fe),y
+	iny
+	bne		+
+		inc		irqMBBaseH
++
+	;
+	sty		irqMBIdx
+}
+	;------
+
+	pla
+	tay
+	pla
+	tax
+
+	lda		$45
+	rti
+
+;------------------------------------------------------------------------------
+
+; Pre: ($FE) = msg
+print
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;--------------------------------------
+
+SetPhasorMode:
+; Pre: phasorMode
+
+	lda		MBBaseH
+	asl
+	asl
+	asl
+	asl								; slot * 16
+	clc
+	adc		phasorMode
+	tax
+	lda		$c080,x
+	rts
+
+;--------------------------------------
+
+DisableSSI263:
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	lda		#MODE_IRQ_DISABLED+$00	; DR1:DR0=3 , P5:P0=$00
+	ldy		#SSI_DURPHON
+	sta		(MBBase),y
+
+	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ inactive
+	ldy		#SSI_CTTRAMP
+	sta		(MBBase),y
+
+	rts
+
+;--------------------------------------
+
+; Skyfox MB detection routine:
+
+SF_GetMBSlot:
+; Pre:
+; Post:
+;  Z = 0 (NE) : MB detected
+;  X = HI(MB base address)
+;  (MBBase) = MB slot address
+;
+
+	jsr		SF_Detect
+
+.Loop:	stx		$ff
+		jsr		SF_Detect
+		cpx		$ff
+		bne		.Loop
+
+	cpx		#$C8
+	rts
+
+;
+
+SF_Detect:
+	lda		#0
+	sta		MBBaseL
+	lda		#$c1
+	sta		MBBaseH
+	ldx		#7
+
+.SlotNext:
+		ldy		#$00+SY6522_TIMER1L_COUNTER
+		jsr		SF_GetTimerL
+		bne		.SlotLoop
+
+		ldy		#$80+SY6522_TIMER1L_COUNTER
+		jsr		SF_GetTimerL
+		beq		.SlotDone
+
+.SlotLoop:
+		inc		MBBaseH
+		dex
+		bne		.SlotNext
+
+.SlotDone:
+	ldx		MBBaseH
+	rts
+
+;
+
+SF_GetTimerL:
+	lda		(MBBase),y
+	cmp		MBBaseL
+	sbc		(MBBase),y
+	cmp		#$08
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+!align 15, 0, 0		; align to 16 bytes (pad with 0's)
+
+isPhasorCard		!byte 0
+testNum:			!byte 0
+phasorMode:			!byte PH_MOCKINGBOARD
+irqTimer1Timeout:	!byte 0
+irqTimer1Flag:		!byte 0
+irqSpeechMBFlag:	!byte 0
+irqSpeechPHFlag:	!byte 0
+irqCount:			!word 0
+irqMBIdx:			!byte 0
+irqMBBaseH			!byte 0
+
+saveFC:			!byte 0
+saveFD:			!byte 0
+saveFE:			!byte 0
+saveFF:			!byte 0
+
+msg0 !text "SSI263 tests passed for Mockingboard",0xd,0xa
+msg0End !text 0
+
+msg1 !text "SSI263 tests passed for Phasor",0xd,0xa
+msg1End !text 0
+
+msg_NoMB !text "No Mockingboard detected!",0xd,0xa
+msg_NoMBEnd !text 0
+
+msg_NoSSI263_MB !text "No SSI263 detected! (Mockingboard mode)",0xd,0xa
+msg_NoSSI263_MBEnd !text 0
+
+msg_NoSSI263_Phasor !text "No SSI263 detected! (Phasor mode)",0xd,0xa
+msg_NoSSI263_PhasorEnd !text 0
+
+msg_DataError !text "6522 data write/read error!",0xd,0xa
+msg_DataErrorEnd  !text 0
