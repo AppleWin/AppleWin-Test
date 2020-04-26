@@ -18,6 +18,8 @@ irq-pending.aws.yaml
 . GH#677: Test loading a save-state with a MB Timer1 interrupt pending
 6522-one-shot.aws.yaml
 . GH#567 & GH#765: 3 tests for 6522, including T1 one-shot test
+SSI263-test.aws.yaml
+. GH#777: 6 tests for the SSI263 testing both Mockingboard & Phasor modes
 
 SmartPort-page-cross.aws.yaml
 . GH#319: Test SmartPort (HDD) firmware when MLI crosses page
