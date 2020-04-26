@@ -263,11 +263,9 @@ aaa1		stx		$400
 	ldy		#SY6522_PCR+SY6522_B_BASE
 	sta		(MBBase),y
 
-	; NB. For Test#3: IFR=$02 during the timeout in Test#2 (as CA1=input) - verified on real Phasor h/w
-	; So clear IFR.b1 here:
 	lda		#1<<1
 	ldy		#SY6522_IFR+SY6522_B_BASE
-	sta		(MBBase),y				; clear CA1(Speech) IRQ
+	sta		(MBBase),y				; Clear any CA1(Speech) IRQ
 
 	; Warning: stepping this won't yield an IRQ, since the phoneme completes before H->L
 	lda		#MODE_PHONEME_TRANSITIONED_INFLECTION+$00	; DR1:DR0=3 , P5:P0=$00
@@ -442,8 +440,15 @@ aaa2		stx		$400
 		; MB mode: (irqTimer1Flag==1)
 		lda		irqSpeechMBFlag
 		ora		irqSpeechPHFlag
-		beq		test2_ok
 		bne		test2_ng
+
+			; IFR=$02 during the timeout in Test#2 (as CA1=input) - verified on real Phasor h/w
+			ldy		#SY6522_IFR+SY6522_B_BASE
+			lda		#$02
+			and		(MBBase),y				; Check CA1(Speech) IRQ
+			beq		test2_ng
+			sta		(MBBase),y				; Clear the CA1(Speech) IRQ
+			jmp		test2_ok
 
 +		; Phasor mode: (irqSpeechPHFlag==1)
 		lda		irqTimer1Flag
