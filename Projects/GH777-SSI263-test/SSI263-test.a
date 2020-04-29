@@ -155,7 +155,7 @@ testA
 	ldy		#SSI_DURPHON
 	sta		(MBBase),y
 
-	lda		#$70					; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active (also set Articulation=7)
+	lda		#$70					; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active (also set Articulation=7, as Willy Byte does)
 	ldy		#SSI_CTTRAMP
 	sta		(MBBase),y
 
@@ -205,7 +205,7 @@ testB
 	ldy		#SSI_DURPHON
 	sta		(MBBase),y
 
-	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active (also set Articulation=7)
+	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active
 	ldy		#SSI_CTTRAMP
 	sta		(MBBase),y
 
@@ -225,6 +225,56 @@ testB
 		jmp		exit
 
 +	jsr		DisableSSI263
+
+	; Warning: stepping this won't yield D7==0, since the phoneme completes and sets D7=1
+
+	;   Time | D7
+	;   ---------
+	;      0 | 0
+	;    163 | 0
+	;    326 | 1					- In total wait for 163x2 = 326ms - a very long time!
+
+	ldy		#SSI_BASE				; Check D7==0
+	lda		(MBBase),y
+	and		#1<<7
+	beq		+
+		brk
++
+
+	lda		#$FF
+	jsr		WAIT					; wait 163ms
+
+!if 0 {
+	ldy		#SSI_BASE				; Check D7==0 a 2nd time - no good on emulator!
+	lda		(MBBase),y
+	and		#1<<7
+	beq		+
+		brk
++
+}
+
+	lda		#$FF
+	jsr		WAIT					; wait 163ms a 2nd time
+
+	ldy		#SSI_BASE				; Check D7==1
+	lda		(MBBase),y
+	and		#1<<7
+	bne		+
+		brk
+
++	lda		#0
+	sta		irqCount
+	sta		irqCount+1
+
+	cli
+	nop
+	sei
+
+	lda		irqCount				; Check that MODE_IRQ_DISABLED prevents IRQ from occurring
+	ora		irqCount+1
+	beq		+
+		brk
++
 
 testB_done
 	lda		#PH_MOCKINGBOARD		; prep for test1
@@ -283,7 +333,7 @@ aaa1		stx		$400
 	sta		(MBBase),y
 	lda		#$ff
 	ldy		#SY6522_TIMER1H_COUNTER+SY6522_A_PH_BASE
-	sta		(MBBase),y
+	sta		(MBBase),y				; (and clears IFR.T1)
 
 	lda		#1<<6
 	ldy		#SY6522_ACR+SY6522_A_PH_BASE
@@ -395,7 +445,7 @@ aaa2		stx		$400
 	sta		(MBBase),y
 	lda		#$ff
 	ldy		#SY6522_TIMER1H_COUNTER+SY6522_A_PH_BASE
-	sta		(MBBase),y
+	sta		(MBBase),y				; (and clears IFR.T1)
 
 	lda		#1<<6
 	ldy		#SY6522_ACR+SY6522_A_PH_BASE
@@ -521,15 +571,9 @@ test2_ok
 	stx		$ff
 	jsr		print
 
-	lda		MBBaseH
-	asl
-	asl
-	asl
-	asl								; slot * 16
-	clc
-	adc		#PH_MOCKINGBOARD
-	tax
-	lda		$c080,x					; Set MB mode
+	lda		#PH_MOCKINGBOARD
+	sta		phasorMode
+	jsr		SetPhasorMode
 
 	lda		#0
 	ldy		#SY6522_ACR
@@ -639,6 +683,8 @@ ISR_MB2
 			inc		irqTimer1Flag
 +		jmp		.done
 
+; NB. PCR doesn't have to be $0C for a CA1 interrupt (int can still occur so long as PCR.b0=0).
+; But in the above tests, always PCR==$0C for MB speech interrupts via this ISR.
 .check_speech_mb
 	ldy		#SY6522_PCR+SY6522_B_BASE
 	lda		(MBBase),y
