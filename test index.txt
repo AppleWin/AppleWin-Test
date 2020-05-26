@@ -198,6 +198,11 @@ cmd line switches:
 	. -h1, -h2
 . GH#726: (2nd DiskII card)
 	. -s5 diskii -s5d1, -s5d2, -s6d1, -s6d2
+. GH#790: (overloading some of the GH#398 tests)
+	. Test that -d1, -d2 get written to Registry
+	. Test -h1 & -s7-empty-on-exit (Registry)
+	. Test that -d1, -d2 get written to conftest.ini
+	. Test -h1 & -s7-empty-on-exit (conftest.ini)
 
 =================================================
 
