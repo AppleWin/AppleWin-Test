@@ -1,0 +1,73 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "Dummy-image", plain
+!sl "Dummy-image.labels"
+*=$800
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+; pre: x=slot<<4
+entrypoint:
+	!byte $01
+	txa
+	pha
+	jsr		HOME
+	pla
+	and		#$f0
+	cmp		#$70
+	bne		.floppy
+
+.hdd	ldx		#<msg0
+		lda		#>msg0
+		jmp		.print
+
+.floppy	ldx		#<msg1
+		lda		#>msg1
+
+.print
+	stx		$fe
+	sta		$ff
+	jsr		print
+
+hang
+	jmp		hang
+
+;--------------------------------------
+
+; Pre: ($FE) = msg
+print
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+msg0 !text 0xa,0xa,0xa,0xa,0xa,0xa,0xa,0xa,0xa,0xa,"Booted from HDD",0xa
+msg0End !text 0
+
+msg1 !text 0xa,0xa,0xa,0xa,0xa,0xa,0xa,0xa,0xa,0xa,"Booted from floppy",0xa
+msg1End !text 0
+
+; Pad to 4KiB
+!align $1fff, $1800, 0		; (PC & $1fff) == $1800; fill with $00
