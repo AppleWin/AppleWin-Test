@@ -57,7 +57,7 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-COM2-tx-rx-tcp.aws.yaml"
 %1\applewin -log -h1 %~dp0\Dummy-image.hdv.gz
-%1\applewin -log -d1 %~dp0\AS-S2.dsk -s7 empty
+%1\applewin -log -d1 %~dp0\AS-S2.dsk -s7 empty -s7-empty-on-exit
 %1\applewin -log -d1 %~dp0\AS-S1.dsk -d2 "%~dp0\AS-S2.dsk"
 @REM
 %1\applewin -log -d1 %~dp0\Dummy-image.dsk.gz
