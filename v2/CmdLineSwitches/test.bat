@@ -7,19 +7,19 @@ copy /y %~dp0\..\phasor2.dsk %~dp0\
 copy /y %~dp0\..\cybernoid.dsk %~dp0\
 copy /y %~dp0\..\mbtest-poll.po %~dp0\
 
-%1\applewin -log -h1 Dummy-image.hdv.gz
-%1\applewin -log -d1 ..\AS-S2.dsk -s7 empty -s7-empty-on-exit
-%1\applewin -log -d1 ..\AS-S1.dsk -d2 "..\AS-S2.dsk"
+%1\applewin -log -h1 v2\CmdLineSwitches\Dummy-image.hdv.gz
+%1\applewin -log -d1 v2\AS-S2.dsk -s7 empty -s7-empty-on-exit
+%1\applewin -log -d1 v2\AS-S1.dsk -d2 "v2\AS-S2.dsk"
 @REM
-%1\applewin -log -d1 Dummy-image.dsk.gz
+%1\applewin -log -d1 v2\CmdLineSwitches\Dummy-image.dsk.gz
 %1\applewin -log -power-on
-%1\applewin -log -h1 Dummy-image.hdv.gz -s7-empty-on-exit
+%1\applewin -log -h1 v2\CmdLineSwitches\Dummy-image.hdv.gz -s7-empty-on-exit
 %1\applewin -log -power-on
 @REM
 copy /y %~dp0\conftest-gm.ini %~dp0\conftest.ini
-%1\applewin -log -conf %~dp0\conftest.ini -d1 Dummy-image.dsk.gz
+%1\applewin -log -conf %~dp0\conftest.ini -d1 v2\CmdLineSwitches\Dummy-image.dsk.gz
 %1\applewin -log -conf %~dp0\conftest.ini -power-on
-%1\applewin -log -conf %~dp0\conftest.ini -h1 Dummy-image.hdv.gz -s7-empty-on-exit
+%1\applewin -log -conf %~dp0\conftest.ini -h1 v2\CmdLineSwitches\Dummy-image.hdv.gz -s7-empty-on-exit
 %1\applewin -log -conf %~dp0\conftest.ini -power-on
 del %~dp0\conftest.ini
 @REM
