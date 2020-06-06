@@ -190,6 +190,11 @@ SSC-COM2-tx-rx-tcp.aws.yaml
 . Added for GH#707.
 . NB. Can use com0com virtual serial port pair, so that test can be done wholly on local PC.
 
+=================================================
+
+Cmd Line Switches:
+------------------
+
 cmd line switches:
 . GH#398:
 	. -d1, -s7 empty
@@ -203,6 +208,8 @@ cmd line switches:
 	. Test -h1 & -s7-empty-on-exit (Registry)
 	. Test that -d1, -d2 get written to conftest.ini
 	. Test -h1 & -s7-empty-on-exit (conftest.ini)
+. GH#631:
+	. Test -d1, -d2, -h1 relative path
 
 =================================================
 
