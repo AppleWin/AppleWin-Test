@@ -160,11 +160,15 @@ Sherwood Forest.aws.yaml
 
 Ultima-V.aws.yaml
 . GH#599: Test waiting for drive to stop spinning in Authentic Disk Speed mode.
- 
+
 NoSlotClockTest.aws.yaml
 . Test NSC
 . Code is in the middle of reading date/time from NSC
 . NB. Use ProDOS command "- NS.CLOCK.UTILS"
+NoSlotClockTest-v6.aws.yaml
+. v6 = unit 'Apple2' v6
+. Test unit type 'Miscellaneous' which contains NSC state
+. Code is in the middle of reading date/time from NSC
 
 AppleColorCard-slideshow-lake.aws.yaml
 . GH#621: Test support for AppleColor card's 160-color pixel video mode
