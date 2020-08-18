@@ -22,9 +22,12 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\A2e-enhanced-VideoModeSwitch.aws.yaml
 %1\applewin -log -load-state %~dp0\arkanoid.aws.yaml
 %1\applewin -log -load-state "%~dp0\AS-S1_Turn the disk over.aws.yaml"
+%1\applewin -log -load-state "%~dp0\AS-S1_Turn the disk over(PAL).aws.yaml" -video-mode=composite-monitor
 %1\applewin -log -load-state "%~dp0\AS-S2_End credits.aws.yaml"
+%1\applewin -log -load-state "%~dp0\AS-S2_End credits(PAL).aws.yaml" -video-mode=composite-monitor
 %1\applewin -log -d1 %~dp0\OMT.dsk -60hz
 %1\applewin -log -load-state %~dp0\OMT-PAL.aws.yaml
+%1\applewin -log -d1 %~dp0\TRIBU.dsk -50hz -video-mode=composite-monitor
 %1\applewin -log -load-state %~dp0\AZTEC.aws.yaml
 %1\applewin -log -load-state %~dp0\CPM2.2(56k)-1.aws.yaml
 %1\applewin -log -load-state %~dp0\CPM2.2(56k)-2-mbasic.aws.yaml
@@ -43,12 +46,13 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\phasor-fugue.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-speech.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-tone.aws.yaml
+%1\applewin -log -load-state %~dp0\Base64A.aws.yaml
 %1\applewin -log -load-state %~dp0\Pravets82.aws.yaml
 %1\applewin -log -load-state %~dp0\Pravets8A.aws.yaml
 %1\applewin -log -load-state %~dp0\Pravets8M.aws.yaml
+%1\applewin -log -load-state %~dp0\TK3000e.aws.yaml
 %1\applewin -log -load-state "%~dp0\Prince of Persia.aws.yaml"
 %1\applewin -log -load-state %~dp0\Tests-Various.aws.yaml
-%1\applewin -log -load-state %~dp0\TK3000e.aws.yaml
 %1\applewin -log -load-state "%~dp0\Gemstone Warrior.aws.yaml"
 %1\applewin -log -load-state "%~dp0\Sherwood Forest.aws.yaml"
 %1\applewin -log -load-state %~dp0\Ultima-V.aws.yaml

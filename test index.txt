@@ -53,10 +53,14 @@ arkanoid.aws.yaml
 . Test: mouse
 
 AS-S1_Turn the disk over.aws.yaml
+AS-S1_Turn the disk over(PAL).aws.yaml
 . Vertical DLORES/TEXT80 split
+. GH#763: PAL kill color-burst
 
 AS-S2_End credits.aws.yaml
+AS-S2_End credits(PAL).aws.yaml
 . Horizontal DLORES/TEXT80 split
+. GH#763: PAL kill color-burst
 
 OMT.dsk -60hz
 . GH#648: 60Hz/NTSC - correctly fails with "KO" message
@@ -64,6 +68,9 @@ OMT.dsk -60hz
 OMT-PAL.aws.yaml
 . GH#648: 50Hz/PAL
 . GH#652: TIMER1 period=N+2
+
+TRIBU.dsk -50hz
+. GH#763: PAL kill color-burst
 
 AZTEC.aws.yaml
 . GH#347: Test speed of Aztec loading until "PRESS ANY KEY" message
@@ -125,6 +132,9 @@ phasor-speech.aws.yaml
 phasor-tone.aws.yaml
 . Phasor, mid-tone (ie. no more changes to AY regs occur after loading snapshot)
 
+Base64A.aws.yaml
+. Base 64A (Taiwanese Apple II clone)
+
 Pravets82.aws.yaml
 . Pravets82
 
@@ -133,6 +143,9 @@ Pravets8A.aws.yaml
 
 Pravets8M.aws.yaml
 . Pravets8M
+
+TK3000e.aws.yaml
+. TK3000 //e
 
 Prince of Persia.aws.yaml
 . Test 800KiB 3.5" image
@@ -144,10 +157,8 @@ Tests-Various.aws.yaml
 . GH#352: Full-speed in mixed mode results in flickery video
 . GH#356: PrintScreen from Color TV or B&W TV video modes is missing top line
 . GH#254: Rainbow (read floating bus to switch between GR and HGR screens)
-. GH#555: All combinations of 40-col & 80-col text/graphics mixed modes
-
-TK3000e.aws.yaml
-. TK3000 //e
+. GH#555: All combinations of 40-col & 80-col text/graphics mixed modes (NTSC)
+. GH#763: All combinations of 40-col & 80-col text/graphics mixed modes (PAL)
 
 Gemstone Warrior.aws.yaml
 . Allow game to boot to title screen, to test:

@@ -2481,7 +2481,7 @@ Unit:
         Floppy Motor On: false
         Floppy Write Mode: false
         Unit0:
-          Filename: Aztec.dsk
+          Filename: AZTEC.dsk
           Track: 0
           Phase: 0
           Byte: 0x0000
