@@ -69,6 +69,9 @@ OMT-PAL.aws.yaml
 . GH#648: 50Hz/PAL
 . GH#652: TIMER1 period=N+2
 
+DD-v0.6.aws.yaml
+. Test loading multiple sync events: Phasor, using 6522-A.T1 and 6522-B.T1
+
 TRIBU.dsk -50hz
 . GH#763: PAL kill color-burst
 
