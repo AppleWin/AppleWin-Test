@@ -65,15 +65,16 @@ AS-S2_End credits(PAL).aws.yaml
 OMT.dsk -60hz
 . GH#648: 60Hz/NTSC - correctly fails with "KO" message
 
+DD-v0.6.aws.yaml
+. Test loading multiple sync events: Phasor, using 6522-A.T1 and 6522-B.T1
+
 OMT-PAL.aws.yaml
 . GH#648: 50Hz/PAL
 . GH#652: TIMER1 period=N+2
 
-DD-v0.6.aws.yaml
-. Test loading multiple sync events: Phasor, using 6522-A.T1 and 6522-B.T1
-
 TRIBU.dsk -50hz
 . GH#763: PAL kill color-burst
+. NB. uses MB's in slot-4 & slot-5 (but only sees Phasor as a single MB in slot-4)
 
 AZTEC.aws.yaml
 . GH#347: Test speed of Aztec loading until "PRESS ANY KEY" message

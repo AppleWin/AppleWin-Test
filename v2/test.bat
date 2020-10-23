@@ -26,8 +26,8 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state "%~dp0\AS-S2_End credits.aws.yaml"
 %1\applewin -log -load-state "%~dp0\AS-S2_End credits(PAL).aws.yaml" -video-mode=composite-monitor
 %1\applewin -log -d1 %~dp0\OMT.dsk -60hz
-%1\applewin -log -load-state %~dp0\OMT-PAL.aws.yaml
 %1\applewin -log -load-state %~dp0\DD-v0.6.aws.yaml
+%1\applewin -log -load-state %~dp0\OMT-PAL.aws.yaml
 %1\applewin -log -d1 %~dp0\TRIBU.dsk -50hz -video-mode=composite-monitor
 %1\applewin -log -load-state %~dp0\AZTEC.aws.yaml
 %1\applewin -log -load-state %~dp0\CPM2.2(56k)-1.aws.yaml
