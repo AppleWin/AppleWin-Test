@@ -6,6 +6,7 @@
 %1\applewin -log -load-state %~dp0\audit-A2+-Saturn.aws.yaml
 %1\applewin -log -load-state %~dp0\audit-A2e.aws.yaml
 %1\applewin -log -load-state %~dp0\audit-A2e-enhanced.aws.yaml
+CALL "v2\RGB card\test.bat" %~1
 CALL "v2\CmdLineSwitches\test.bat" %~1
 CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\irq-pending.aws.yaml
@@ -40,8 +41,6 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\Cybernoid2(Phasorv3).aws.yaml
 %1\applewin -log -load-state %~dp0\MB-Poll-IFR-Test.aws.yaml
 %1\applewin -log -load-state %~dp0\MB-Poll-IFR-Test2.aws.yaml
-%1\applewin -log -load-state %~dp0\dazzledraw1.aws.yaml -video-mode=rgb-videocard
-%1\applewin -log -load-state %~dp0\dragon_wars.aws.yaml -video-mode=rgb-videocard
 %1\applewin -log -load-state %~dp0\FANTAVISION.aws.yaml
 %1\applewin -log -load-state %~dp0\HDD-32MB.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-fugue.aws.yaml
@@ -59,7 +58,6 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state %~dp0\Ultima-V.aws.yaml
 %1\applewin -log -load-state %~dp0\NoSlotClockTest.aws.yaml
 %1\applewin -log -load-state %~dp0\NoSlotClockTest-v6.aws.yaml
-%1\applewin -log -load-state %~dp0\AppleColorCard-slideshow-lake.aws.yaml -video-mode=rgb-videocard
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-COM2-tx-rx-tcp.aws.yaml"
