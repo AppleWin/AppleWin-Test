@@ -1,6 +1,6 @@
 @IF "%~1" == "" GOTO help
 
-copy /y %~dp0\..\"Prince of Persia (Original 3.5 floppy for IIc+).2mg" %~dp0\
+copy /y %~dp0\..\"Prince of Persia (Original 3.5 floppy for IIc+).po" %~dp0\
 copy /y %~dp0\..\GNR-FINAL.2mg.gz %~dp0\
 copy /y %~dp0\..\phasor1.dsk %~dp0\
 copy /y %~dp0\..\phasor2.dsk %~dp0\
@@ -23,10 +23,10 @@ copy /y %~dp0\conftest-gm.ini %~dp0\conftest.ini
 %1\applewin -log -conf %~dp0\conftest.ini -power-on
 del %~dp0\conftest.ini
 @REM
-%1\applewin -log -model apple2ee -h1 "%~dp0\Prince of Persia (Original 3.5 floppy for IIc+).2mg" -h2 %~dp0\GNR-FINAL.2mg.gz
+%1\applewin -log -model apple2ee -h1 "%~dp0\Prince of Persia (Original 3.5 floppy for IIc+).po" -h2 %~dp0\GNR-FINAL.2mg.gz
 %1\applewin -log -model apple2ee -s5 diskii -s5d1 %~dp0\phasor1.dsk -s5d2 %~dp0\phasor2.dsk -s6d1 %~dp0\cybernoid.dsk -s6d2 %~dp0\mbtest-poll.po -s7 empty
 
-del %~dp0\"Prince of Persia (Original 3.5 floppy for IIc+).2mg"
+del %~dp0\"Prince of Persia (Original 3.5 floppy for IIc+).po"
 del %~dp0\GNR-FINAL.2mg.gz
 del %~dp0\phasor1.dsk
 del %~dp0\phasor2.dsk

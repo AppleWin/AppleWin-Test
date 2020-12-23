@@ -2258,7 +2258,7 @@ Unit:
         Current Unit: 1 # b7=unit
         Command: 0x01
         Unit0:
-          Filename: Prince of Persia (Original 3.5 floppy for IIc+).2MG
+          Filename: Prince of Persia (Original 3.5 floppy for IIc+).po
           Error: 0x00
           MemBlock: 0x7400
           DiskBlock: 0x00000059
