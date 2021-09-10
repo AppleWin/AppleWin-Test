@@ -1,7 +1,7 @@
 @IF "%~1" == "" GOTO help
 
-CALL v1\test.bat %~1
-CALL v2\test.bat %~1
+CALL v1\test.bat %1
+CALL v2\test.bat %1
 @GOTO end
 
 :help

@@ -6,9 +6,9 @@
 %1\applewin -log -load-state %~dp0\audit-A2+-Saturn.aws.yaml
 %1\applewin -log -load-state %~dp0\audit-A2e.aws.yaml
 %1\applewin -log -load-state %~dp0\audit-A2e-enhanced.aws.yaml
-CALL "v2\RGB card\test.bat" %~1
-CALL "v2\CmdLineSwitches\test.bat" %~1
-CALL "v2\Video ROM\test.bat" %~1
+CALL "v2\RGB card\test.bat" %1
+CALL "v2\CmdLineSwitches\test.bat" %1
+CALL "v2\Video ROM\test.bat" %1
 %1\applewin -log -load-state %~dp0\irq-pending.aws.yaml
 %1\applewin -log -load-state %~dp0\6522-one-shot.aws.yaml
 %1\applewin -log -load-state %~dp0\SSI263-test.aws.yaml
@@ -61,8 +61,8 @@ CALL "v2\Video ROM\test.bat" %~1
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-COM2-tx-rx-tcp.aws.yaml"
-CALL v2\Memory\test.bat %~1
-CALL v2\DiskFormat\test.bat %~1
+CALL v2\Memory\test.bat %1
+CALL v2\DiskFormat\test.bat %1
 @ECHO Done v2 tests
 @GOTO end
 
