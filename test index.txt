@@ -131,6 +131,9 @@ phasor-speech.aws.yaml
 phasor-tone.aws.yaml
 . Phasor, mid-tone (ie. no more changes to AY regs occur after loading snapshot)
 
+SAM Slot 5.aws.yaml
+. Test SAM in slot 5
+
 Base64A.aws.yaml
 . Base 64A (Taiwanese Apple II clone)
 
