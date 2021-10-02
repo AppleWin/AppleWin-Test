@@ -183,6 +183,11 @@ NoSlotClockTest-v6.aws.yaml
 . Test unit type 'Miscellaneous' which contains NSC state
 . Code is in the middle of reading date/time from NSC
 
+contiki-apple2-1-request-ip.aws-yaml
+. Test Uthernet-I card (with Contiki v2.7)
+. Request an IP address
+. Test web browser with: info.cern.ch
+
 SSC-TCP-IN#2.aws.yaml
 . Test save-state SSC unit v1
 . GH#486:

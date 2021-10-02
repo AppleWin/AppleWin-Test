@@ -59,6 +59,7 @@ CALL "v2\Video ROM\test.bat" %1
 %1\applewin -log -load-state %~dp0\Ultima-V.aws.yaml
 %1\applewin -log -load-state %~dp0\NoSlotClockTest.aws.yaml
 %1\applewin -log -load-state %~dp0\NoSlotClockTest-v6.aws.yaml
+%1\applewin -log -load-state %~dp0\contiki-apple2-1-request-ip.aws.yaml
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-COM2-tx-rx-tcp.aws.yaml"
