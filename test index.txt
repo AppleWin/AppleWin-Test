@@ -32,6 +32,14 @@ Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 	. Test ALT+ENTER (doesn't toggle full-screen)
 . GH#556: Test AKD: RETURN(keyboard) + ENTER(numpad), then release ENTER. AKD should still be high.
 
+4Play-slot4.aws.yaml
+. From Lukazi's 4playRevB_Example\4playRevB_Example.dsk
+. Only supports controller#0
+SNES_MAX-slot4.aws.yaml
+. From Lukazi's SNES_MAX_Programming_Example\SNES_MAX.dsk
+. Supports both controllers
+. NB. Part way through reading the controller buttons
+
 archon_i.aws.yaml
 . Archon title screen, snapshot mid-tune (speaker)
 . GH#616: RGB (Color Monitor) & vertical blend
