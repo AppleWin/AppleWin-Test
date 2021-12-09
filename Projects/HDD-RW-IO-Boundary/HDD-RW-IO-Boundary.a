@@ -1,0 +1,205 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "HDD-RW-IO-Boundary", plain
+!sl "HDD-RW-IO-Boundary.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+!source "HardDiskDefs.a"
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+entrypoint
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	; clear $BE00-BFFF
+	lda 	#0
+	sta		$fe
+	lda		#$be
+	sta		$ff
+	ldy		#0
+	lda		#0
+	ldx		#2		; 2x 256 pages = 1x 512 blocks
+	clc
+-			sta		($fe),y
+			iny
+			bne		-
+		inc		$ff
+		dex
+		bne		-
+
+	lda		#<mem_blk_data
+	sta		$fe
+	lda		#>mem_blk_data
+	sta		$ff
+
+	;
+	; Attempt next write to block #1
+	;
+loop
+		ldy		#0
+		lda		($fe),y
+		sta		param_mem_block_l
+		iny
+		lda		($fe),y
+		sta		param_mem_block_h
+		jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0_0	!byte	CMD_WRITE
+mli0_1	!byte	<param	; param_l
+mli0_2	!byte	>param	; param_h
+!zone code
+		rol
+		and		#1			; A=Carry (result)
+		ldy		#2
+		cmp		($fe),y
+		beq		+
+			lda		($fe),y
+			bne		++
+			jmp error_write
+++			jmp error_write_io
++
+
+		lda		$fe
+		clc
+		adc		#SIZE_MEMBLK_DATA
+		sta		$fe
+		bcc		+
+			inc		$ff
++
+
+		ldy		#0
+		lda		($fe),y
+		iny
+		ora		($fe),y
+		bne		loop
+
+	;
+	; write $BE00 to block #1 (restore block #1 to all zeros)
+	;
+
+	lda		#$00
+	sta		param_mem_block_l
+	lda		#$be
+	sta		param_mem_block_h
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli1_0	!byte	CMD_WRITE
+mli1_1	!byte	<param	; param_l
+mli1_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp error_write
++
+
+	;
+
+success
+	lda		#<msg0
+	ldx		#>msg0
+	jsr		print
+	jmp		done
+
+error_write
+	lda		#<msg1
+	ldx		#>msg1
+	jsr		print
+	jmp		done
+
+error_write_io
+	lda		#<msg2
+	ldx		#>msg2
+	jsr		print
+	jmp		done
+
+	;
+
+done
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	rts
+
+;--------------------------------------
+
+; Pre: X:A = msg
+print
+	sta		$fe
+	stx		$ff
+
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+saveFC			!byte 0
+saveFD			!byte 0
+saveFE			!byte 0
+saveFF			!byte 0
+
+param
+	!byte	3	; param length
+	!byte	0	; unit
+param_mem_block_l
+	!byte	0	; mem_block_l
+param_mem_block_h
+	!byte	0	; mem_block_h
+	!byte	1	; disk_block_l
+	!byte	0	; disk_block_h
+
+SIZE_MEMBLK_DATA = 3
+
+!macro MEMBLK addr,carry {
+	!word	addr
+	!byte	carry
+}
+
+mem_blk_data
+	+MEMBLK	$be00,0	; no I/O overlap (expect C=0)
+	+MEMBLK	$be01,1	; 1 byte I/O overlap (expect C=1)
+	+MEMBLK	$bfff,1	; 511 bytes I/O overlap (expect C=1)
+	+MEMBLK	$cf00,1	; half in I/O and half in RAM (expect C=1)
+	+MEMBLK	$d000,0	; no I/O overlap (expect C=0)
+	+MEMBLK $0000,0	;(end)
+
+msg0 !text "HDD write OK",0xd,0xa
+msg0End !text 0
+
+msg1 !text "Write error for block 1!",0xd,0xa
+msg1End !text 0
+
+msg2 !text "Write to I/O succeeded when it should have failed!",0xd,0xa
+msg2End !text 0
