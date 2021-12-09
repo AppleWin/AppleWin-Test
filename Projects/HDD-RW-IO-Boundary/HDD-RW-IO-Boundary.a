@@ -24,6 +24,57 @@ entrypoint
 	lda		$ff
 	sta		saveFF
 
+	;
+	; Reads from block #1
+	;
+
+	lda		#<mem_blk_r_data
+	sta		$fe
+	lda		#>mem_blk_r_data
+	sta		$ff
+
+loop1
+		ldy		#0
+		lda		($fe),y
+		sta		param_mem_block_l
+		iny
+		lda		($fe),y
+		sta		param_mem_block_h
+		jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0_0	!byte	CMD_READ
+mli0_1	!byte	<param	; param_l
+mli0_2	!byte	>param	; param_h
+!zone code
+		rol
+		and		#1			; A=Carry (result)
+		ldy		#2
+		cmp		($fe),y
+		beq		+
+			lda		($fe),y
+			bne		++
+			jmp error_read
+++			jmp error_read_io
++
+
+		lda		$fe
+		clc
+		adc		#SIZE_MEMBLK_DATA
+		sta		$fe
+		bcc		+
+			inc		$ff
++
+
+		ldy		#0
+		lda		($fe),y
+		iny
+		ora		($fe),y
+		bne		loop1
+
+	;
+	; Writes to block #1
+	;
+
 	; clear $BE00-BFFF
 	lda 	#0
 	sta		$fe
@@ -40,15 +91,12 @@ entrypoint
 		dex
 		bne		-
 
-	lda		#<mem_blk_data
+	lda		#<mem_blk_w_data
 	sta		$fe
-	lda		#>mem_blk_data
+	lda		#>mem_blk_w_data
 	sta		$ff
 
-	;
-	; Attempt next write to block #1
-	;
-loop
+loop2
 		ldy		#0
 		lda		($fe),y
 		sta		param_mem_block_l
@@ -57,9 +105,9 @@ loop
 		sta		param_mem_block_h
 		jsr 	ENTRYPOINT_SMARTPORT
 !zone data
-mli0_0	!byte	CMD_WRITE
-mli0_1	!byte	<param	; param_l
-mli0_2	!byte	>param	; param_h
+mli1_0	!byte	CMD_WRITE
+mli1_1	!byte	<param	; param_l
+mli1_2	!byte	>param	; param_h
 !zone code
 		rol
 		and		#1			; A=Carry (result)
@@ -84,7 +132,7 @@ mli0_2	!byte	>param	; param_h
 		lda		($fe),y
 		iny
 		ora		($fe),y
-		bne		loop
+		bne		loop2
 
 	;
 	; write $BE00 to block #1 (restore block #1 to all zeros)
@@ -96,9 +144,9 @@ mli0_2	!byte	>param	; param_h
 	sta		param_mem_block_h
 	jsr 	ENTRYPOINT_SMARTPORT
 !zone data
-mli1_0	!byte	CMD_WRITE
-mli1_1	!byte	<param	; param_l
-mli1_2	!byte	>param	; param_h
+mli2_0	!byte	CMD_WRITE
+mli2_1	!byte	<param	; param_l
+mli2_2	!byte	>param	; param_h
 !zone code
 	bcc		+
 	jmp error_write
@@ -112,15 +160,27 @@ success
 	jsr		print
 	jmp		done
 
-error_write
+error_read
 	lda		#<msg1
 	ldx		#>msg1
 	jsr		print
 	jmp		done
 
-error_write_io
+error_read_io
 	lda		#<msg2
 	ldx		#>msg2
+	jsr		print
+	jmp		done
+
+error_write
+	lda		#<msg3
+	ldx		#>msg3
+	jsr		print
+	jmp		done
+
+error_write_io
+	lda		#<msg4
+	ldx		#>msg4
 	jsr		print
 	jmp		done
 
@@ -187,7 +247,15 @@ SIZE_MEMBLK_DATA = 3
 	!byte	carry
 }
 
-mem_blk_data
+mem_blk_r_data
+	+MEMBLK	$be00,0	; no I/O overlap (expect C=0)
+	+MEMBLK	$be01,1	; 1 byte I/O overlap (expect C=1)
+	+MEMBLK	$bfff,1	; 511 bytes I/O overlap (expect C=1)
+	+MEMBLK	$cf00,1	; half in I/O and half in RAM (expect C=1)
+	+MEMBLK	$d000,0	; no I/O overlap (expect C=0)
+	+MEMBLK $0000,0	;(end)
+
+mem_blk_w_data
 	+MEMBLK	$be00,0	; no I/O overlap (expect C=0)
 	+MEMBLK	$be01,1	; 1 byte I/O overlap (expect C=1)
 	+MEMBLK	$bfff,1	; 511 bytes I/O overlap (expect C=1)
@@ -203,8 +271,12 @@ mem_blk_data
 msg0 !text "HDD write OK",0xd,0xa
 msg0End !text 0
 
-msg1 !text "Write error for block 1!",0xd,0xa
+msg1 !text "Read error for block 1!",0xd,0xa
 msg1End !text 0
-
-msg2 !text "Write to I/O succeeded when it should have failed!",0xd,0xa
+msg2 !text "Read from I/O succeeded when it should have failed!",0xd,0xa
 msg2End !text 0
+
+msg3 !text "Write error for block 1!",0xd,0xa
+msg3End !text 0
+msg4 !text "Write to I/O succeeded when it should have failed!",0xd,0xa
+msg4End !text 0
