@@ -193,6 +193,11 @@ mem_blk_data
 	+MEMBLK	$bfff,1	; 511 bytes I/O overlap (expect C=1)
 	+MEMBLK	$cf00,1	; half in I/O and half in RAM (expect C=1)
 	+MEMBLK	$d000,0	; no I/O overlap (expect C=0)
+	;
+	+MEMBLK	$fe00,0	; no wrap on 64KiB boundary (expect C=0)
+	+MEMBLK	$fe01,0	; wraps on 64KiB boundary (expect C=0)
+	+MEMBLK	$ff00,0	; wraps on 64KiB boundary (expect C=0)
+	+MEMBLK	$ffff,0	; wraps on 64KiB boundary (expect C=0)
 	+MEMBLK $0000,0	;(end)
 
 msg0 !text "HDD write OK",0xd,0xa
