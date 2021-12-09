@@ -268,7 +268,7 @@ mem_blk_w_data
 	+MEMBLK	$ffff,0	; wraps on 64KiB boundary (expect C=0)
 	+MEMBLK $0000,0	;(end)
 
-msg0 !text "HDD write OK",0xd,0xa
+msg0 !text "HDD read & write tests OK",0xd,0xa
 msg0End !text 0
 
 msg1 !text "Read error for block 1!",0xd,0xa
