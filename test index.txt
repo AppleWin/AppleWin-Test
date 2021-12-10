@@ -25,6 +25,8 @@ SSI263-test.aws.yaml
 
 SmartPort-page-cross.aws.yaml
 . GH#319: Test SmartPort (HDD) firmware when MLI crosses page
+HDD-RW-IO-Boundary.aws.yaml
+. GH#1007: Test HDD reads & writes overlapping with I/O memory
 
 Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 . GH#556: Test Hook Filter ie. emulator can detect these: ALT+ESC, ALT+SPACE, ALT+TAB
