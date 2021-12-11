@@ -219,6 +219,10 @@ SSC-COM2-tx-rx-tcp.aws.yaml
 . Added for GH#707.
 . NB. Can use com0com virtual serial port pair, so that test can be done wholly on local PC.
 
+Reset_defaults.aws.yaml
+. Empty the drives and set model=apple2ee
+. Otherwise, next time AppleWin starts it'll try to load the temp disk image that has since been deleted!
+
 =================================================
 
 Cmd Line Switches:

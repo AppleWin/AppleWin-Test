@@ -68,6 +68,7 @@ CALL "v2\Video ROM\test.bat" %1
 %1\applewin -log -load-state "%~dp0\SSC-COM2-tx-rx-tcp.aws.yaml"
 CALL v2\Memory\test.bat %1
 CALL v2\DiskFormat\test.bat %1
+%1\applewin -log -load-state %~dp0\Reset_defaults.aws.yaml
 @ECHO Done v2 tests
 @GOTO end
 
