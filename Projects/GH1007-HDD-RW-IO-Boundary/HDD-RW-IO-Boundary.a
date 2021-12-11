@@ -25,8 +25,11 @@ entrypoint
 	sta		saveFF
 
 	;
-	; Reads from block #1
+	; Reads from block #1, when LC is write-enabled
 	;
+
+	bit		$c081
+	bit		$c081		; Read ROM; write RAM; use $D000 bank 2 (RESET default)
 
 	lda		#<mem_blk_r_data
 	sta		$fe
@@ -72,8 +75,31 @@ mli0_2	!byte	>param	; param_h
 		bne		loop1
 
 	;
-	; Writes to block #1
+	; Read from block #1 to LC, when LC is write-protected
 	;
+
+	bit		$c082		; Read ROM; no write; use $D000 bank 2
+
+	lda		#$00
+	sta		param_mem_block_l
+	lda		#$D0
+	sta		param_mem_block_h
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0b_0	!byte	CMD_READ
+mli0b_1	!byte	<param	; param_l
+mli0b_2	!byte	>param	; param_h
+!zone code
+	bcs		+
+		jmp error_read_lc_protected
++
+
+	;
+	; Writes to block #1, when LC is write-enabled
+	;
+
+	bit		$c081
+	bit		$c081		; Read ROM; write RAM; use $D000 bank 2 (RESET default)
 
 	; clear $BE00-BFFF
 	lda 	#0
@@ -172,15 +198,21 @@ error_read_io
 	jsr		print
 	jmp		done
 
-error_write
+error_read_lc_protected
 	lda		#<msg3
 	ldx		#>msg3
 	jsr		print
 	jmp		done
 
-error_write_io
+error_write
 	lda		#<msg4
 	ldx		#>msg4
+	jsr		print
+	jmp		done
+
+error_write_io
+	lda		#<msg5
+	ldx		#>msg5
 	jsr		print
 	jmp		done
 
@@ -273,10 +305,13 @@ msg0End !text 0
 
 msg1 !text "Read error for block 1!",0xd,0xa
 msg1End !text 0
-msg2 !text "Read from I/O succeeded when it should have failed!",0xd,0xa
+msg2 !text "Read block to I/O succeeded when it should have failed!",0xd,0xa
 msg2End !text 0
 
-msg3 !text "Write error for block 1!",0xd,0xa
+msg3 !text "Read block to ROM succeeded when it should have failed!",0xd,0xa
 msg3End !text 0
-msg4 !text "Write to I/O succeeded when it should have failed!",0xd,0xa
+
+msg4 !text "Write error for block 1!",0xd,0xa
 msg4End !text 0
+msg5 !text "Write block from I/O succeeded when it should have failed!",0xd,0xa
+msg5End !text 0

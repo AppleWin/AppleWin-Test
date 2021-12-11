@@ -6,6 +6,10 @@ db mli0_0
 db mli0_1
 db mli0_2
 
+db mli0b_0
+db mli0b_1
+db mli0b_2
+
 db mli1_0
 db mli1_1
 db mli1_2
@@ -17,3 +21,6 @@ db mli2_2
 asc msg0:msg0End
 asc msg1:msg1End
 asc msg2:msg2End
+asc msg3:msg3End
+asc msg4:msg4End
+asc msg5:msg5End
