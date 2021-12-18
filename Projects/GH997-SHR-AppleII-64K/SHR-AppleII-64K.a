@@ -1,0 +1,71 @@
+;ACME 0.97
+
+!cpu 6502	; Compatible with all Apple2's
+!to "SHR-AppleII-64K", plain
+!sl "SHR-AppleII-64K.labels"
+*=$800
+
+; SHR image is in main memory: $2000-$9FFF
+; This code copies it to fake aux memory, which VidHD sees.
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+entrypoint
+	; TEXT, PAGE1
+	lda		SW_TEXT_ENA
+	lda		SW_PAGE2_DIS
+
+	lda		#$00
+	sta		$fe
+	lda		#$04
+	sta		$ff
+	
+	lda		#' '
+	ldx		#4
+	ldy		#0
+-			sta		($fe),y
+			iny
+			bne		-
+		inc		$ff
+		dex
+		bne		-
+
+	;
+
+	; Read main, write aux ($200-$BFFF)
+	sta		SW_AUXREAD_DIS
+	sta		SW_AUXWRITE_ENA
+
+	lda		#$00
+	sta		$fe
+	lda		#$20
+	sta		$ff
+
+	ldx		#$A0-$20	; copy SHR image: $2000-$9FFF
+	ldy		#0
+-			lda		($fe),y
+			sta		($fe),y
+			iny
+			bne		-
+		inc		$ff
+		dex
+		bne		-
+
+	lda		#$00		; enable auxmem-to-bank-E1 shadowing on IIgs
+	sta		SW_SHADOW
+	sta		SW_SHADOW	; toggle speaker cone (to avoid an audible click) - see Total Replay
+
+	lda		#$C0		; Enable SHR(b7) | Linearize SHR video memory(b6)
+	sta		SW_NEWVIDEO
+
+-	jmp		-
+
+;------------------------------------------------------------------------------
+
+;!zone data

@@ -1,0 +1,3 @@
+// PWD: <root>\AppleWin-Test\Projects\SHR-AppleII-64K
+// run "debug.txt"
+bload "SHR-AppleII-64K",800
