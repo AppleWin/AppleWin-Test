@@ -1,0 +1,113 @@
+;ACME 0.97
+
+!cpu 6502	; Compatible with all Apple2's
+!to "sound-ramp", plain
+!sl "sound-ramp.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+entrypoint
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	;
+
+-		lda		$c000
+		bpl		-
+	bit		$c010
+	cmp		#$80+27		; ESC
+	beq		done
+	jsr		TONE
+	jmp		-
+
+	;
+
+done
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	rts
+
+;--------------------------------------
+
+;*************************
+;*	TONE
+;*	JULY 1984
+TONE
+;	LDA SOUND
+;	BEQ T6 ; NO SOUND
+	LDA #1
+	STA T4+1
+T1	LDX #4 
+	SEC
+	LDA #0
+	SBC T4+1
+	STA T2+1
+T2	LDY #1 
+T3	DEY 
+	BNE T3
+	LDA $C030
+T4	LDY #0 
+T5	DEY 
+	BNE T5 
+	LDA $C030
+	DEX
+	BNE T2
+	INC T4+1
+	BNE T1 
+T6	RTS
+
+;--------------------------------------
+
+; Pre: X:A = msg
+print
+	sta		$fe
+	stx		$ff
+
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+saveFC			!byte 0
+saveFD			!byte 0
+saveFE			!byte 0
+saveFF			!byte 0
+
+
+msg0 !text "Sound ramp done",0xd,0xa
+msg0End !text 0
