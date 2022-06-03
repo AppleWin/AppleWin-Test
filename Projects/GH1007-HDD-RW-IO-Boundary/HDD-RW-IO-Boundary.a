@@ -285,6 +285,7 @@ mem_blk_r_data
 	+MEMBLK	$bfff,1	; 511 bytes I/O overlap (expect C=1)
 	+MEMBLK	$cf00,1	; half in I/O and half in RAM (expect C=1)
 	+MEMBLK	$d000,0	; no I/O overlap (expect C=0)
+	+MEMBLK	$d080,0	; no I/O overlap, access 3 pages: $d0,d1,d2 (expect C=0)
 	+MEMBLK $0000,0	;(end)
 
 mem_blk_w_data
