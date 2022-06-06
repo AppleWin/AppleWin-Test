@@ -1,0 +1,6 @@
+bpmw d07f,2
+bpmw d100
+bpmw d200
+bpmr ffff
+bpmr 0080
+bpmr 01fe,2

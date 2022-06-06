@@ -25,8 +25,6 @@ SSI263-test.aws.yaml
 
 SmartPort-page-cross.aws.yaml
 . GH#319: Test SmartPort (HDD) firmware when MLI crosses page
-HDD-RW-IO-Boundary.aws.yaml
-. GH#1007: Test HDD reads & writes overlapping with I/O memory
 
 Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 . GH#556: Test Hook Filter ie. emulator can detect these: ALT+ESC, ALT+SPACE, ALT+TAB
@@ -248,6 +246,7 @@ cmd line switches:
 
 DiskFormat:
 -----------
+
 ProDOS_format_auth_dsk.aws.yaml
 ProDOS_format_auth_nib.aws.yaml
 ProDOS_format_enh_dsk.aws.yaml
@@ -266,8 +265,18 @@ DOS3.2.1_init_enh_nib.aws.yaml
 
 =================================================
 
+HDD RW IO Boundary:
+-------------------
+
+HDD-RW-IO-Boundary.aws.yaml
+. GH#1007: Test HDD reads & writes overlapping with I/O memory
+. Test HDD DMA breakpoints, by setting BPs using DebuggerAutoRun.txt
+
+=================================================
+
 Memory:
 -------
+
 LC-RAMWrite-Test.aws.yaml
 . Test save-state being in the middle of 2x LDA $C083 (to write enable LC Bank2 RAM)
 . Success is an "OK" message, otherwise crash to the monitor
