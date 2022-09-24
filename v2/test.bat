@@ -6,6 +6,7 @@
 %1\applewin -log -load-state %~dp0\audit-A2+-Saturn.aws.yaml
 %1\applewin -log -load-state %~dp0\audit-A2e.aws.yaml
 %1\applewin -log -load-state %~dp0\audit-A2e-enhanced.aws.yaml
+CALL "v2\WOZ\test.bat" %1
 CALL "v2\HDD-RW-IO-Boundary\test.bat" %1
 CALL "v2\RGB card\test.bat" %1
 CALL "v2\CmdLineSwitches\test.bat" %1

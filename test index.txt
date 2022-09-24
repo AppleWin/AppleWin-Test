@@ -346,6 +346,35 @@ Test 16KiB custom ROM: EDM custom rom
 
 =================================================
 
+WOZ:
+----
+
+Accolade's Comics - A.woz
+. Press any key at blue "Accolade" title, and it will do 2 protections checks before advancing to "Play Game" / "Practice video game sequence"
+
+Balance of Power(OptTiming0x20) - Disk 1, Side A.woz
+. Protection occurs at "PRODOS 8 V1.3" text screen.
+
+Buzzard Bait (woz-a-day collection).zip
+
+Glutton.zip
+. Reboot 10 times to check it passes protection check each time
+
+Gruds in Space side A.woz
+
+Legacy of the Ancients - Side 1 - copy 2.woz
+. same as Wasteland
+
+Run For It - Disk 1, Side A_wp.woz
+
+Wasteland - Boot #1.woz
+. same as Legacy of the Ancients
+
+Wizardry III side B - boot.woz
+. Protection occurs after title sequence
+
+=================================================
+
 v1: Info about each test:
 -------------------------
 
