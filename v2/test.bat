@@ -47,6 +47,7 @@ CALL "v2\Video ROM\test.bat" %1
 %1\applewin -log -load-state %~dp0\FANTAVISION.aws.yaml
 %1\applewin -log -load-state %~dp0\HDD-32MB.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-fugue.aws.yaml
+%1\applewin -log -load-state %~dp0\phasor-fugue(v9).aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-speech.aws.yaml
 %1\applewin -log -load-state %~dp0\phasor-tone.aws.yaml
 %1\applewin -log -load-state "%~dp0\SAM Slot 5.aws.yaml"
