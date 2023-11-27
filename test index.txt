@@ -315,6 +315,14 @@ AppleColorCard-slideshow-lake.aws.yaml
 
 =================================================
 
+VidHD card:
+-----------
+
+SHR-AppleII-64K-Skyfox.aws.yaml
+. Test: Apple II+ copying SHR image to VidHD's aux memory & displaying it
+
+=================================================
+
 Video ROM:
 ----------
 
