@@ -1,4 +1,4 @@
-# Date-stamp: Tue Oct 13 21:48:44 2020
+# Date-stamp: Sun Dec 31 15:34:47 2023
 
 ---
 File_hdr:
@@ -7,7 +7,7 @@ File_hdr:
 
 Unit:
   Type: Apple2
-  Version: 5
+  Version: 8
   State:
     Model: Enhanced Apple//e
     CPU:
@@ -21,11 +21,14 @@ Unit:
       Cumulative Cycles: 0x0000000003A3A76B
       Defer IRQ By 1 Opcode: false
     Joystick:
-      Counter Reset Cycle: 0x0000000000000000
       Joystick0 TrimX: 0
       Joystick0 TrimY: 0
       Joystick1 TrimX: 0 # not implemented yet
       Joystick1 TrimY: 0 # not implemented yet
+      Paddle0 Inactive Cycle: 0x0000000000000000
+      Paddle1 Inactive Cycle: 0x0000000000000000
+      Paddle2 Inactive Cycle: 0x0000000000000000
+      Paddle3 Inactive Cycle: 0x0000000000000000
     Keyboard:
       Last Key: 0x00
       Key Waiting: false
@@ -2160,10 +2163,10 @@ Unit:
         Serial Port Name: ""
     4:
       Card: Phasor
-      Version: 5
+      Version: 10
       State:
-        Clock Scale Factor: 1
         Mode: 0
+        Votrax Phoneme: false
         Unit0:
           SY6522:
             ORB: 0x04
@@ -2173,9 +2176,11 @@ Unit:
             Timer1 Counter: 0x0064
             Timer1 Latch: 0x0093
             Timer1 IRQ Delay: 0
+            Timer1 Active: true
             Timer2 Counter: 0x5895
             Timer2 Latch: 0x0000
             Timer2 IRQ Delay: 0
+            Timer2 Active: false
             Serial Shift: 0x00
             ACR: 0x40
             PCR: 0x00
@@ -2217,73 +2222,6 @@ Unit:
               PortA: 0x00
               PortB: 0x00
           AY8910-B:
-            Tone0 Tick: 151
-            Tone1 Tick: 0
-            Tone2 Tick: 4
-            Tone0 High: 0
-            Tone1 High: 1
-            Tone2 High: 0
-            Noise Tick: 0
-            Tone Subcycles: 521312
-            Env Subcycles: 294432
-            Env Internal Tick: 5
-            Env Tick: 2563
-            Tick Incr: 1509344
-            Tone0 Period: 153
-            Tone1 Period: 61
-            Tone2 Period: 122
-            Noise Period: 4
-            RNG: 89629
-            Noise Toggle: 0
-            Env First: 0
-            Env Rev: 0
-            Env Counter: 10
-            Registers:
-              Tone0 Period: 0x099
-              Tone1 Period: 0x03D
-              Tone2 Period: 0x07A
-              Noise Period: 0x04
-              Mixer: 0xEA
-              Vol0: 0x07
-              Vol1: 0x08
-              Vol2: 0x0B
-              Env Period: 0x0000
-              Env Shape: 0x8
-              PortA: 0x00
-              PortB: 0x00
-          SSI263:
-            Duration / Phoneme: 0x00
-            Inflection: 0x00
-            Rate / Inflection: 0x00
-            Control / Articulation / Amplitude: 0x00
-            Filter Frequency: 0x00
-            Current Mode: 0x00
-          Unit State: 0x2
-          Unit State-B: 0x2
-          AY Current Register: 0xB
-          Timer1 IRQ Pending: false # Not supported
-          Timer2 IRQ Pending: false # Not supported
-          Speech IRQ Pending: false # Not supported
-          Timer1 Active: true
-          Timer2 Active: false
-        Unit1:
-          SY6522:
-            ORB: 0x04
-            ORA: 0x00
-            DDRB: 0x07
-            DDRA: 0xFF
-            Timer1 Counter: 0x490D
-            Timer1 Latch: 0x4F36
-            Timer1 IRQ Delay: 0
-            Timer2 Counter: 0x5895
-            Timer2 Latch: 0x0000
-            Timer2 IRQ Delay: 0
-            Serial Shift: 0x00
-            ACR: 0x40
-            PCR: 0x00
-            IFR: 0x00
-            IER: 0x00
-          AY8910-A:
             Tone0 Tick: 4627490
             Tone1 Tick: 4627490
             Tone2 Tick: 4627490
@@ -2316,6 +2254,76 @@ Unit:
               Vol2: 0x00
               Env Period: 0x0000
               Env Shape: 0x0
+              PortA: 0x00
+              PortB: 0x00
+          SSI263:
+            Duration / Phoneme: 0x00
+            Inflection: 0x00
+            Rate / Inflection: 0x00
+            Control / Articulation / Amplitude: 0x00
+            Filter Frequency: 0x00
+            Current Mode: 0x00
+            Active Phoneme: false
+          Unit State: 0x2
+          Unit State-B: 0x2
+          AY Current Register: 0x0B
+          AY Current Register B: 0x00
+          Chip Select A: false
+          Chip Select B: false
+          Reg Address Latch Valid A: false
+          Reg Address Latch Valid B: false
+        Unit1:
+          SY6522:
+            ORB: 0x04
+            ORA: 0x00
+            DDRB: 0x07
+            DDRA: 0xFF
+            Timer1 Counter: 0x490D
+            Timer1 Latch: 0x4F36
+            Timer1 IRQ Delay: 0
+            Timer1 Active: true
+            Timer2 Counter: 0x5895
+            Timer2 Latch: 0x0000
+            Timer2 IRQ Delay: 0
+            Timer2 Active: false
+            Serial Shift: 0x00
+            ACR: 0x40
+            PCR: 0x00
+            IFR: 0x00
+            IER: 0x00
+          AY8910-A:
+            Tone0 Tick: 151
+            Tone1 Tick: 0
+            Tone2 Tick: 4
+            Tone0 High: 0
+            Tone1 High: 1
+            Tone2 High: 0
+            Noise Tick: 0
+            Tone Subcycles: 521312
+            Env Subcycles: 294432
+            Env Internal Tick: 5
+            Env Tick: 2563
+            Tick Incr: 1509344
+            Tone0 Period: 153
+            Tone1 Period: 61
+            Tone2 Period: 122
+            Noise Period: 4
+            RNG: 89629
+            Noise Toggle: 0
+            Env First: 0
+            Env Rev: 0
+            Env Counter: 10
+            Registers:
+              Tone0 Period: 0x099
+              Tone1 Period: 0x03D
+              Tone2 Period: 0x07A
+              Noise Period: 0x04
+              Mixer: 0xEA
+              Vol0: 0x07
+              Vol1: 0x08
+              Vol2: 0x0B
+              Env Period: 0x0000
+              Env Shape: 0x8
               PortA: 0x00
               PortB: 0x00
           AY8910-B:
@@ -2360,21 +2368,21 @@ Unit:
             Control / Articulation / Amplitude: 0x00
             Filter Frequency: 0x00
             Current Mode: 0x00
+            Active Phoneme: false
           Unit State: 0x2
           Unit State-B: 0x2
-          AY Current Register: 0xB
-          Timer1 IRQ Pending: false # Not supported
-          Timer2 IRQ Pending: false # Not supported
-          Speech IRQ Pending: false # Not supported
-          Timer1 Active: true
-          Timer2 Active: false
+          AY Current Register: 0x0B
+          AY Current Register B: 0x00
+          Chip Select A: false
+          Chip Select B: false
+          Reg Address Latch Valid A: false
+          Reg Address Latch Valid B: false
     6:
       Card: Disk][
-      Version: 5
+      Version: 8
       State:
         Current Drive: 0
         Phases: 0x1
-        Disk Accessed: false
         Enhance Disk: true
         Floppy Latch: 0x96
         Floppy Motor On: false
@@ -2382,8 +2390,10 @@ Unit:
         Last Read Latch Cycle: 0x0000000000614EA1
         LSS Shift Reg: 0x00
         LSS Latch Delay: 0
-        LSS Reset Sequencer: true
         LSS Sequencer Function: 0
+        Deferred Stepper Event: false
+        Deferred Stepper Address: 0x0000
+        Deferred Stepper Cycle: 0x0000000000000000
         Format Track state:
           Written Sector Address Fields: 0x0000
           Write Track Start Index: 0x0000
@@ -2394,10 +2404,12 @@ Unit:
           Vol,Trk,Sec,Chk (4 and 4): 0xFBFFAFAFAAAFFEFF
           Index (4 and 4): 0x8
         Unit0:
+          Drive Connected: true
           Phase: 0
           Phase (precise): 0.000000
           Head Window: 0x0
           Last Stepper Cycle: 0x0000000000000000
+          Motor On Cycle: 0x0000000000000000
           Spinning: 0
           Write Light: 0
           Floppy:
@@ -2411,10 +2423,12 @@ Unit:
             Track Image Data: 0
             Track Image Dirty: 0
         Unit1:
+          Drive Connected: true
           Phase: 0
           Phase (precise): 0.000000
           Head Window: 0x0
           Last Stepper Cycle: 0x0000000000000000
+          Motor On Cycle: 0x0000000000000000
           Spinning: 0
           Write Light: 0
           Floppy:
@@ -2427,4 +2441,16 @@ Unit:
             Write Protected: false
             Track Image Data: 0
             Track Image Dirty: 0
+
+Unit:
+  Type: Miscellaneous
+  Version: 1
+  State:
+    No Slot Clock:
+      Clock Register Enabled: false
+      Write Enabled: true
+      Clock Register Mask: 0x0000000000000001
+      Clock Register: 0x0000000000000000
+      Comparison Register Mask: 0x0000000000000001
+      Comparison Register: 0x5CA33AC55CA33AC5
 ...
