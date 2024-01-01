@@ -1,0 +1,177 @@
+;ACME 0.97
+
+!cpu 6502	; Compatible with all Apple2's
+!to "RamWorksIII-256KB", plain
+!sl "RamWorksIII-256KB.labels"
+*=$2000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+
+NUM_PAGES = 3
+
+String = $fe
+StringL = String
+StringH = String+1
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+entrypoint
+	php
+	sei
+	sta		SW_ALTZP_ENA
+
+	tsx
+	stx		saveSP
+
+	ldx		#$ff
+	txs
+
+	lda		#0
+	sta		errorNum
+
+	lda		#$00
+	sta		rw3page
+
+@loop1	lda		rw3page
+		sta		SW_RW3_SETPAGE
+
+		jsr		fillPages0and1
+
+		clc
+		lda		rw3page
+		adc		#1
+		sta		rw3page
+		cmp		#NUM_PAGES
+		bne		@loop1
+
+	; save-state here:
+	dec		rw3page
+
+@loop2	lda		rw3page
+		sta		SW_RW3_SETPAGE
+
+		jsr		checkPages0and1		; post: C=OK/NG
+		bcc		+
+		inc		errorNum
+		bcs		@done
++
+
+		dec		rw3page
+		bpl		@loop2
+
+@done
+	ldx		saveSP
+	txs
+
+	sta		SW_ALTZP_DIS
+	plp
+
+	lda		errorNum
+	bne		+
+		lda		#<msg_OK
+		ldx		#>msg_OK
+		bne		++
++		lda		#<msg_Failed
+		ldx		#>msg_Failed
+++	jsr		Print
+
+	rts
+
+;------------------
+
+fillPages0and1
+; pre: return addr at $1fe,$1ff
+
+	lda		#$00
+	sta		@smc+1
+	lda		#$00
+	sta		@smc+2
+
+@fill	; fill: [$0000-$01FE] with rw3page^0xff
+		lda		rw3page
+		eor		#$ff
+@smc	sta		$ffff
+		inc		@smc+1
+		bne		+
+			inc		@smc+2
++		lda		@smc+1
+		cmp		#$fe
+		bne		@fill
+		lda		@smc+2
+		cmp		#$01
+		bne		@fill
+
+@done
+	rts
+
+;------------------
+
+checkPages0and1
+; pre: return addr at $1fe,$1ff
+; post: C=0(OK), C=1(NG)
+
+	lda		#$00
+	sta		@smc+1
+	lda		#$00
+	sta		@smc+2
+
+@check	; check: [$0000-$01FE] == rw3page^0xff
+		lda		rw3page
+		eor		#$ff
+@smc	cmp		$ffff
+		bne		@error
+
+		inc		@smc+1
+		bne		+
+			inc		@smc+2
++		lda		@smc+1
+		cmp		#$fe
+		bne		@check
+		lda		@smc+2
+		cmp		#$01
+		bne		@check
+
+@done
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;------------------------------------------------------------------------------
+
+Print
+; Pre: A(l),X(h) = msg addr
+
+	sta		StringL
+	stx		StringH
+	ldy		#0
+@loop	lda		(String),y
+		beq		+
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	@loop
++	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+rw3page		!byte 0
+saveSP		!byte 0
+errorNum	!byte 0
+
+msg_OK !text "OK",0xd,0
+msg_Failed !text "Failed",0xd,0

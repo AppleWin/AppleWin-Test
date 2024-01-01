@@ -1,0 +1,2 @@
+// PWD: <root>\AppleWin-Test\Projects\GH1262-RamWorksIII-256KB
+bload "RamWorksIII-256KB",2000
