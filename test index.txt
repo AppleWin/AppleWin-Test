@@ -294,6 +294,9 @@ RamWorks_r4.aws.yaml
 . Use gid's 64K bank counting code (ref: https://groups.google.com/d/msg/comp.emulators.apple2/C62pO09U2og/MhrRZH14AgAJ, 1st May 2017)
 . NB. Need to improve this to verify that the memory in all aux banks has been correctly restored
 
+RamWorksIII-256KB.aws.yaml
+. GH#1262: Test that 1st aux 64KB bank isn't corrupted (pages 0 & 1) when loading save-state.
+
 =================================================
 
 RGB card:
