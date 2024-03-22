@@ -1,0 +1,2 @@
+// PWD: <root>\AppleWin-Test\Projects\GH1279-Saturn-in-slot3
+bload "Saturn-in-slot3",2000

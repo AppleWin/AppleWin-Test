@@ -1,0 +1,692 @@
+;ACME 0.97
+
+!cpu 6502	; Compatible with all Apple2's
+!to "Saturn-in-slot3", plain
+!sl "Saturn-in-slot3.labels"
+*=$2000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+
+SLOT0 = 0
+SLOT3 = 3
+
+CardBase = $fe		; LC or Saturn
+CardBaseL = CardBase
+CardBaseH = CardBase+1
+
+String = $fe
+StringL = String
+StringH = String+1
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+entrypoint
+
+	jsr		HOME
+
+	lda		VERSION
+	cmp		#VERSION_IIE_OR_HIGHER
+	bne		+
+		lda		#1
+		sta		hasLowerCase
++
+
+	lda		#CT_UNKNOWN
+	sta		slot0type
+	sta		slot3type
+
+	lda		#$C0
+	sta		CardBaseH
+	lda		#$80
+	sta		CardBaseL
+	jsr		CheckCardIsSaturn
+	lda		#CT_SATURN
+	bcc		+
+	jsr		CheckCardIsLC
+	bcs		@notRAM
+	lda		#CT_LC
++	sta		slot0type
+
+	lda		#$80+16*SLOT3
+	sta		CardBaseL
+	jsr		CheckCardIsSaturn
+	lda		#CT_SATURN
+	bcc		+
+	jsr		CheckCardIsLC		; NB. Emulation doesn't support a LC in slot3!
+	bcs		@notRAM
+	lda		#CT_LC
++	sta		slot3type
+
+	jsr		PrintCardInfo
+
+	;
+
+	ldx		#SLOT0
+	lda		slot0type
+	cmp		#CT_LC
+	bne		+
+		jsr		FillLC
+		jmp		++
++		jsr		FillSaturn
+++
+
+	ldx		#SLOT3
+	lda		slot3type
+	cmp		#CT_LC
+	bne		+
+		jsr		FillLC
+		jmp		++
++		jsr		FillSaturn
+++
+
+	jsr		DoTests
+	bcc		@ok
+
+	lda		#<msg_Failed
+	ldx		#>msg_Failed
+	jsr		Print
+	lda		testNum
+	clc
+	adc		#$80+'0'
+	jsr		COUT
+	lda		#$8d
+	jsr		COUT
+	jmp		exit
+
+@ok
+	lda		#<msg_OK
+	ldx		#>msg_OK
+	jsr		Print
+	jmp		exit
+
+@notRAM
+	jsr		PrintNotRAM
+
+exit
+	lda		$C082	; Read ROM; no write
+	rts
+
+;------------------
+
+DoTests
+; Post: C=0(OK), C=1(NG)
+
+	lda		#0
+	sta		testNum
+	jsr		Test0
+	bcs		@done
+
+	inc		testNum
+	jsr		Test1
+	bcs		@done
+
+	inc		testNum
+	jsr		Test2
+	bcs		@done
+
+	inc		testNum
+	jsr		Test3
+	bcs		@done
+
+	inc		testNum
+	jsr		Test4
+	bcs		@done
+
+@done
+	lda		$C082	; Read ROM; no write
+	rts
+
+;------------------
+
+Test0
+; Post: all Saturn cards set to 16K bank 0
+; Check any Saturn cards are still set to 16K bank 7 - a side effect of FillSaturn()
+
+	lda		slot0type
+	cmp		#CT_SATURN
+	bne		@slot3
+
+	ldx		#SLOT0
+	jsr		SetCardBaseForSlot
+	ldy		#0
+	lda		(CardBase),y
+	lda		CardBaseL
+	clc
+	adc		#7
+	cmp		$D000
+	bne		@error
+	ldy		#4
+	lda		(CardBase),y	; set 16K bank 0
+
+@slot3
+	lda		slot3type
+	cmp		#CT_SATURN
+	bne		@done
+
+	ldx		#SLOT3
+	jsr		SetCardBaseForSlot
+	ldy		#0
+	lda		(CardBase),y
+	lda		CardBaseL
+	clc
+	adc		#7
+	cmp		$D000
+	bne		@error
+	ldy		#4
+	lda		(CardBase),y	; set 16K bank 0
+
+@done
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;------------------
+
+Test1
+; Set slot0 card: RAM enabled & write enabled
+; Set slot3 card: RAM enabled & write protected
+; <save-state>
+; <load-state>
+; Check slot0 card
+; Check slot3 card
+
+	ldx		#SLOT3
+	jsr		SetCardBaseForSlot
+
+	lda		$C083			; slot0: Read RAM, write enable (4K bank 2)
+	lda		$C083			; slot0: WRTCOUNT=2
+
+	; check: slot0 RAM is r/w
+	lda		#$80			; slot0:$80
+	cmp		$D000
+	bne		@error
+	inc		$D000
+	cmp		$D000
+	beq		@error
+	dec		$D000
+
+	ldy		#4
+	lda		(CardBase),y	; Saturn: 16K bank 0
+	ldy		#0
+	lda		(CardBase),y	; Saturn: RAM read, write protect, 4K bank 2
+
+	nop						; *** manually save-state here ***
+
+	; check: slot3 RAM is r/o
+	lda		CardBaseL		; slot3:$B0
+	cmp		$D000
+	bne		@error
+	inc		$D000
+	cmp		$D000
+	bne		@error
+
+	; Check that the slot0 card's LC memmode bits got correctly reloaded from save-state
+							; Pre: slot0: WRTCOUNT=2
+	lda		$C083			; slot0: Read RAM, write enable (4K bank 2) - only a single access req'd
+
+	lda		#$80			; slot0:$80
+	cmp		$D000
+	bne		@error
+	inc		$D000
+	cmp		$D000
+	beq		@error
+	dec		$D000
+
+@done
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;------------------
+
+Test2
+; Set slot3 card: RAM enabled & write enabled
+; Set slot0 card: RAM enabled & write protected
+; <save-state>
+; <load-state>
+; Check slot3 card
+; Check slot0 card
+
+	ldx		#SLOT3
+	jsr		SetCardBaseForSlot
+
+	ldy		#4
+	lda		(CardBase),y	; Saturn: 16K bank 0
+	ldy		#3
+	lda		(CardBase),y	; Saturn: RAM read, write enable, 4K bank 2
+	lda		(CardBase),y
+
+	; check: slot3 RAM is r/w
+	lda		CardBaseL		; slot3:$B0
+	cmp		$D000
+	bne		@error
+	inc		$D000
+	cmp		$D000
+	beq		@error
+	dec		$D000
+
+	lda		$C080			; slot0: Read RAM, write protect (4K bank 2)
+
+	nop						; *** manually save-state here ***
+
+	; check: slot0 RAM is r/o
+	lda		#$80
+	cmp		$D000
+	bne		@error
+	inc		$D000
+	cmp		$D000
+	bne		@error
+
+	; Check that the slot3 card's LC memmode bits got correctly reloaded from save-state
+							; Pre: slot3: WRTCOUNT=2
+	ldy		#4
+	lda		(CardBase),y	; Saturn: 16K bank 0
+
+	lda		CardBaseL		; slot3:$B0
+	cmp		$D000
+	bne		@error
+	inc		$D000
+	cmp		$D000
+	beq		@error
+	dec		$D000
+
+@done
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;------------------
+
+Test3
+; For each of slot3 Saturn's 16K banks (ie. all 8):
+; . slot0 card is active (RAM enabled & write protected)
+; . check we can read RAM, but can't write RAM
+; . switch to slot3 Saturn 16K bank N, selecting: RAM enabled & write enabled & 4K bank 2
+; . check we can r/w RAM
+
+	ldx		#SLOT3
+	jsr		SetCardBaseForSlot
+
+	lda		#4
+	sta		saturnBankReg
+	lda		CardBaseL			; slot3:$B0
+	sta		saturnFillValue
+
+@loop	lda		$C080			; LC: Read RAM, no write (bank 2)
+
+		; check: slot0 RAM is r/o
+		lda		#$80			; slot0:$80
+		cmp		$D000
+		bne		@error
+		inc		$D000
+		cmp		$D000
+		bne		@error
+
+		ldy		saturnBankReg
+		lda		(CardBase),y
+
+		ldy		#3
+		lda		(CardBase),y	; Saturn/LC: RAM read, write enable(WRTCOUNT++), 4K bank 2
+		lda		(CardBase),y
+
+		; check: slot3 RAM is r/w
+		lda		saturnFillValue
+		cmp		$D000
+		bne		@error
+		inc		$D000
+		cmp		$D000
+		beq		@error
+		dec		$D000
+
+		inc		saturnFillValue
+
+		inc		saturnBankReg
+		lda		#$10
+		cmp		saturnBankReg
+		beq		@done
+		lda		#$08
+		cmp		saturnBankReg
+		bne		@loop
+		lda		#$0C
+		sta		saturnBankReg
+		bne		@loop			; (bra)
+
+@done
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;------------------
+
+Test4
+; For each of slot3 Saturn's 16K banks (ie. all 8):
+; . slot3 card is active (RAM enabled & write protected, bank N)
+; . check we can read RAM, but can't write RAM
+; . switch to slot0 LC/Saturn 16K bank 0, selecting: RAM enabled & write enabled & 4K bank 2
+; . check we can r/w RAM
+
+	ldx		#SLOT3
+	jsr		SetCardBaseForSlot
+
+	lda		#4
+	sta		saturnBankReg
+	lda		CardBaseL			; slot3:$B0
+	sta		saturnFillValue
+
+@loop	ldy		saturnBankReg
+		lda		(CardBase),y
+		ldy		#0
+		lda		(CardBase),y	; Saturn: Read RAM, no write (bank 2)
+
+		; check: slot3 RAM is r/o
+		lda		saturnFillValue
+		cmp		$D000
+		bne		@error
+		inc		$D000
+		cmp		$D000
+		bne		@error
+
+		lda		$C083			; LC/Saturn: RAM read, Write enabled (bank 2)
+		lda		$C083
+
+		; check: slot0 RAM is r/w
+		lda		#$80
+		cmp		$D000
+		bne		@error
+		inc		$D000
+		cmp		$D000
+		beq		@error
+		dec		$D000
+
+		inc		saturnFillValue
+
+		inc		saturnBankReg
+		lda		#$10
+		cmp		saturnBankReg
+		beq		@done
+		lda		#$08
+		cmp		saturnBankReg
+		bne		@loop
+		lda		#$0C
+		sta		saturnBankReg
+		bne		@loop			; (bra)
+
+@done
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;------------------
+
+
+FillLC
+
+	lda		#$C0
+	sta		CardBaseH
+	lda		#$80
+	sta		CardBaseL
+
+	ldx		CardBaseL
+	jsr		Fill16K
+
+	ldy		#2
+	sta		(CardBase),y	; Saturn/LC: ROM read, Write protect
+	rts
+
+;------------------
+
+FillSaturn
+; Pre: X=slot#
+; Post: Saturn 16K bank 7 selected (checked by Test0)
+; Assume 8x 16K banks
+
+	jsr		SetCardBaseForSlot
+
+	lda		#4
+	sta		saturnBankReg
+	lda		CardBaseL			; slot0:$80, slot3:$B0
+	sta		saturnFillValue
+
+	lda		#4
+@loop1	pha
+		ldy		saturnBankReg	; select 16K Bank 0..3
+		inc		saturnBankReg
+		lda		(CardBase),y
+		ldx		saturnFillValue
+		inc		saturnFillValue
+		jsr		Fill16K
+		pla
+		sec
+		sbc		#1
+		bne		@loop1
+
+	lda		#$C
+	sta		saturnBankReg
+
+	lda		#4
+@loop2	pha
+		ldy		saturnBankReg	; select 16K Bank 4..7
+		inc		saturnBankReg
+		lda		(CardBase),y
+		ldx		saturnFillValue
+		inc		saturnFillValue
+		jsr		Fill16K
+		pla
+		sec
+		sbc		#1
+		bne		@loop2
+
+	ldy		#2
+	sta		(CardBase),y	; Saturn/LC: ROM read, Write protect
+	rts
+
+;------------------
+
+Fill16K
+; Pre: X=fill value
+
+	ldy		#3
+	lda		(CardBase),y	; Saturn/LC: RAM read, write enable(WRTCOUNT++), 4K bank 2
+	lda		(CardBase),y
+
+	stx		$D000
+	stx		$E000
+
+	ldy		#$B
+	lda		(CardBase),y	; Saturn/LC: RAM read, write enable(WRTCOUNT++), 4K bank 1
+	lda		(CardBase),y
+
+	stx		$D000
+
+	rts
+
+;------------------
+
+; Detect both LC & Saturn cards
+CheckCardIsLC
+	ldy		#3
+	lda		(CardBase),y	; Saturn/LC: RAM read, write enable(WRTCOUNT++)
+	lda		(CardBase),y
+	lda		$E000
+	inc		$E000
+	cmp		$E000
+	beq		+
+	clc
+	bcc		++
++	sec
+++	ldy		#2
+	sta		(CardBase),y	; Saturn/LC: ROM read, Write protect
+	rts
+
+; Detect Saturn card (fails for LC)
+; Taken from the Saturn System disk: TEST128K ($2ace)
+CheckCardIsSaturn
+	ldy		#4
+	sta		(CardBase),y	; Saturn: select 16K bank 1 / LC: RAM read, Write protect (same as $C080)
+	ldy		#3
+	sta		(CardBase),y	; Saturn: RAM read, write enable(WRTCOUNT++) / LC: RAM read, WRTCOUNT=0
+	sta		(CardBase),y
+	lda		$E000
+	inc		$E000
+	cmp		$E000
+	beq		+
+	clc
+	bcc		++
++	sec
+++	ldy		#2
+	sta		(CardBase),y	; Saturn/LC: ROM read, Write protect
+	rts
+
+;------------------
+
+SetCardBaseForSlot
+; Pre: X=slot#
+
+	lda		#$C0
+	sta		CardBaseH
+	txa
+	asl
+	asl
+	asl
+	asl
+	clc
+	adc		#$80
+	sta		CardBaseL
+	rts
+
+;------------------
+
+PrintCardInfo
+	lda		#<msg_Slot0
+	ldx		#>msg_Slot0
+	jsr		Print
+
+	lda		#<msg_LC
+	ldx		#>msg_LC
+	ldy		slot0type
+	cpy		#CT_LC
+	beq		+
+		lda		#<msg_Saturn
+		ldx		#>msg_Saturn
++	jsr		Print
+
+	lda		#$80+','
+	jsr		COUT
+	lda		#$80+' '
+	jsr		COUT
+
+	lda		#<msg_Slot3
+	ldx		#>msg_Slot3
+	jsr		Print
+
+	lda		#<msg_LC
+	ldx		#>msg_LC
+	ldy		slot3type
+	cpy		#CT_LC
+	beq		+
+		lda		#<msg_Saturn
+		ldx		#>msg_Saturn
++	jsr		Print
+
+	lda		#$8d
+	jmp		COUT
+
+;------------------
+
+PrintNotRAM
+	lda		CardBaseL
+	pha
+
+	lda		#<msg_NotRAM
+	ldx		#>msg_NotRAM
+	jsr		Print
+
+	pla
+	sec
+	sbc		#$80
+	lsr
+	lsr
+	lsr
+	lsr
+	clc
+	adc		#$80+'0'
+	jsr		COUT		; slot #
+	lda		#$8d
+	jmp		COUT
+
+;------------------------------------------------------------------------------
+
+Print
+; Pre: A(l),X(h) = msg addr
+
+	sta		StringL
+	stx		StringH
+	ldy		#0
+@loop	lda		(String),y
+		beq		+
+		ldx		hasLowerCase
+		bne		++
+			cmp		#'a'
+			bcc		++
+			cmp		#'z'+1
+			bcs		++
+			and		#!($20)
+++
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	@loop
++	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+CT_UNKNOWN=0
+CT_LC=1
+CT_SATURN=2
+
+slot0type	!byte CT_UNKNOWN
+slot3type	!byte CT_UNKNOWN
+
+saturnBankReg	!byte 0
+saturnFillValue	!byte 0
+saturnBankNum	!byte 0
+
+hasLowerCase	!byte 0
+testNum			!byte 0
+
+
+msg_OK !text "OK",0xd,0
+msg_Failed !text "Failed #",0
+msg_NotRAM !text "Not RAM: slot ",0
+
+msg_Slot0 !text "Slot 0 = ",0
+msg_Slot3 !text "Slot 3 = ",0
+msg_LC !text "LC",0
+msg_Saturn !text "Saturn",0

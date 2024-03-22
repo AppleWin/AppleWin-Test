@@ -1,0 +1,72 @@
+IRQL	= $3FE
+IRQH	= $3FF
+
+;--------------------------------------
+
+SW_80STORE_DIS = $C000
+SW_80STORE_ENA = $C001
+
+SW_AUXREAD_DIS = $C002
+SW_AUXREAD_ENA = $C003
+
+SW_AUXWRITE_DIS = $C004
+SW_AUXWRITE_ENA = $C005
+
+SW_INTCXROM_DIS = $C006
+SW_INTCXROM_ENA = $C007
+SW_INTCXROM_R = $C015	; Active high
+
+SW_ALTZP_DIS = $C008
+SW_ALTZP_ENA = $C009
+SW_ALTZP_R = $C016		; Active high
+
+SW_SLOTC3ROM_DIS = $C00A
+SW_SLOTC3ROM_ENA = $C00B
+SW_SLOTC3ROM_R = $C017	; Active high
+
+SW_NEWVIDEO = $C029		; IIgs
+SW_SHADOW = $C035		; IIgs
+
+SW_TEXT_DIS = $C050
+SW_TEXT_ENA = $C051
+
+SW_PAGE2_DIS = $C054
+SW_PAGE2_ENA = $C055
+
+SW_RW3_SETPAGE = $C073	; RamWorks III set page
+
+;--------------------------------------
+
+KBD = $C000
+KBDSTRB = $C010
+
+TEXTOFF = $C050
+TEXTON = $C051
+MIXEDOFF = $C052
+MIXEDON = $C053
+PAGE2OFF = $C054
+PAGE2ON = $C055
+HIRESOFF = $C056
+HIRESON = $C057
+DHIRESON = $C05E
+DHIRESOFF = $C05F
+
+;--------------------------------------
+
+; See Apple //c TRM, Appendix F, "Machine identification"
+VERSION_II = $38	; II
+VERSION_IIP = $EA	; II+ / Autostart Monitor
+VERSION_IIJP = $C9	; II J-Plus
+VERSION_IIE_OR_HIGHER = $06	; IIe(both variants), IIc(all variants)
+
+VERSION3_IIC = $00	; differentiate between IIe & IIc
+
+PRNTYX = $F940
+PRNTX = $F944
+VERSION = $FBB3		; Signature Byte
+VERSION2 = $FB1E
+VERSION3 = $FBC0
+VERSION4 = $FBBF
+HOME = $FC58
+WAIT = $FCA8
+COUT = $FDED
