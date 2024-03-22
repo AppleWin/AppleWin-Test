@@ -289,6 +289,14 @@ Saturn64.aws.yaml
 Saturn128.aws.yaml
 . Test Saturn64/128K cards by running RAMTEST64K/RAMTEST128K
 
+II+_s0(LC)_s3(Saturn)-test1.aws
+II+_s0(LC)_s3(Saturn)-test2.aws
+II+_s0(Saturn)_s3(Saturn)-test1.aws
+II+_s0(Saturn)_s3(Saturn)-test2.aws
+IIee_s0(LC)_s3(Saturn)-test1.aws
+IIee_s0(LC)_s3(Saturn)-test2.aws
+. Test slot0=LC|Saturn and slot3=Saturn for II+ and //e
+
 RamWorks_r4.aws.yaml
 . Test RamWorks card
 . Use gid's 64K bank counting code (ref: https://groups.google.com/d/msg/comp.emulators.apple2/C62pO09U2og/MhrRZH14AgAJ, 1st May 2017)

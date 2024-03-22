@@ -6,6 +6,12 @@
 %1\applewin -log -load-state "%~dp0\Saturn64.aws.yaml"
 %1\applewin -log -load-state "%~dp0\Saturn128.aws.yaml"
 %1\applewin -log -load-state "%~dp0\Saturn128-Bank3-2.aws.yaml"
+%1\applewin -log -load-state "%~dp0\II+_s0(LC)_s3(Saturn)-test1.aws.yaml"
+%1\applewin -log -load-state "%~dp0\II+_s0(LC)_s3(Saturn)-test2.aws.yaml"
+%1\applewin -log -load-state "%~dp0\II+_s0(Saturn)_s3(Saturn)-test1.aws.yaml"
+%1\applewin -log -load-state "%~dp0\II+_s0(Saturn)_s3(Saturn)-test2.aws.yaml"
+%1\applewin -log -load-state "%~dp0\IIee_s0(LC)_s3(Saturn)-test1.aws.yaml"
+%1\applewin -log -load-state "%~dp0\IIee_s0(LC)_s3(Saturn)-test2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\RamWorks_r4.aws.yaml"
 %1\applewin -log -load-state "%~dp0\RamWorksIII-256KB.aws.yaml"
 @ECHO Done v2 Memory tests
