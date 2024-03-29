@@ -25,9 +25,12 @@ StringH = String+1
 !zone code
 
 entrypoint
+	lda		#2
+	sta		repeatCount
 
 	jsr		HOME
 
+rerun
 	lda		VERSION
 	cmp		#VERSION_IIE_OR_HIGHER
 	bne		+
@@ -101,7 +104,9 @@ entrypoint
 	lda		#<msg_OK
 	ldx		#>msg_OK
 	jsr		Print
-	jmp		exit
+	dec		repeatCount
+	beq		exit
+	jmp		rerun
 
 @notRAM
 	jsr		PrintNotRAM
@@ -678,6 +683,7 @@ saturnBankReg	!byte 0
 saturnFillValue	!byte 0
 saturnBankNum	!byte 0
 
+repeatCount		!byte 0
 hasLowerCase	!byte 0
 testNum			!byte 0
 
