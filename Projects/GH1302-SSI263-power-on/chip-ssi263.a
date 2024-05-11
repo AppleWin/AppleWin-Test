@@ -117,7 +117,7 @@ PredetectSSI263Test_Init
 
 PredetectSSI263Test
 ; Pre: power-on
-; . Phasor only, as use we D7 to determine when phoneme is complete
+; . Phasor only, as it reads D7 to determine when a phoneme is complete
 ; . NB. Using IFR.CA1 only works when SSI263's A/!R interrupt is enabled, which may not be the case at power-on.
 ;
 
