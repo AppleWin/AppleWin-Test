@@ -1,0 +1,444 @@
+;license:MIT
+;(c) 2021-2024 by Tom Charlesworth
+;
+; SSI263 related
+;
+
+;------------------------------------------------------------------------------
+
+;            SSI263-A  SSI263-B
+; SSI263Base  $Cs40     $Cs20
+; MBBase      $Cs80     $Cs10    input for CA1 (SSI263 interrupt) to this 6522's IFR
+; MBTimer     $Cs80     $Cs80    same for both SSI263s
+; hasSSI263   .b0       .b1
+;
+
+DetectSSI263
+; Pre: zpTmp1 = 6522 bitmap in b1:0
+; Post:
+
+	; SSI263 is only on MB-C & Phasor, both of which have 2x 6522's
+	; - Speech using 6522 PCR w/o IRQ (based on Willy Byte's SSI263 detection code)
+
+	lda		#SSI_A_BASE
+	sta		SSI263BaseL
+	lda		MBBaseH
+	sta		SSI263BaseH
+	sta		MBTimerH
+
+	lda		#SY6522_B_BASE
+	sta		MBBaseL
+	sta		MBTimerL
+
+	lda		#1
+	sta		zpTmp2						; mask
+
+	lda		zpTmp1
+	and		#HAS_6522B					; SSI263A is connected to 2nd 6522
+	beq		@nextSSI263
+
+@loop	jsr		PredetectSSI263Test			; Pre: MBTimerL/H
+
+		lda		#IER_CLR|IxR_SSI263
+		ldy		#SY6522_IER
+		sta		(MBBase),y				; disable CA1(Speech) IRQ
+
+		jsr		KickSSI263
+
+		lda		#$FF
+		jsr		WAIT					; delay for 0x28882 (166018) cycles / ~163ms
+
+		ldy		#SY6522_IFR
+		lda		#IxR_SSI263				; check CA1(Speech) IRQ
+		and		(MBBase),y
+		beq		@nextSSI263
+		sta		(MBBase),y				; clear CA1(Speech) IRQ
+
+			jsr		DisableSSI263
+			lda		zpTmp2
+			ora		hasSSI263
+			sta		hasSSI263
+
+@nextSSI263
+		lda		MBBaseL
+		bpl		+						; done if MBBaseL == SY6522_A_PH_BASE (or SY6522_A_BASE)
+		lda		#SSI_B_BASE
+		sta		SSI263BaseL
+		lda		#SY6522_A_PH_BASE
+		sta		MBBaseL
+		asl		zpTmp2					; mask<<1
+
+		lda		zpTmp1
+		and		#HAS_6522A				; SSI263B is connected to 1st 6522
+		bne		@loop
+
++	lda		#SY6522_A_BASE
+	sta		MBBaseL
+	rts
+
+;------------------------------------------------------------------------------
+
+RESULTS_BUFFER = $6000
+SUBBUFFER_SIZE = $40
+; Support up to 4 SSI263's, each with 16 test results
+; $6000 - $603f : slot-X / SSI263-A or B (buffer0)
+; $6040 - $607f : slot-Y / SSI263-A or B (buffer1)
+; $6080 - $60bf : slot-Z / SSI263-A or B (buffer2)
+; $60C0 - $60ff : slot-W / SSI263-A or B (buffer3)
+;
+; eg. where slot X & Y could be the same
+;
+
+RESULTS_SLOTINFO = $6100
+SLOTINFO_SIZE = 4*2
+; $6100 - $6101 : buffer0: SSI263BaseH, SSI263BaseL (b0=notInPowerDown)
+;  :
+; $6106 - $6107 : buffer3: SSI263BaseH, SSI263BaseL (b0=notInPowerDown)
+;
+
+PredetectSSI263Test_Init
+	lda		#0
+
+	ldx		#SLOTINFO_SIZE-1
+-		sta		RESULTS_SLOTINFO,x
+		dex
+		bpl		-
+
+	ldx		#0
+-		sta		RESULTS_BUFFER,x
+		inx
+		bne		-
+
+	stx		smc263_0+1						; Set AddrL = lo(RESULTS_BUFFER) = $00
+	stx		resultsSlotInfoIdx
+	rts
+
+;------------------
+
+PredetectSSI263Test
+; Pre: power-on
+; . Phasor only, as use we D7 to determine when phoneme is complete
+; . NB. Using IFR.CA1 only works when SSI263's A/!R interrupt is enabled, which may not be the case at power-on.
+;
+
+	lda		isPhasorCard
+	bne		+
+		rts
++
+
+	lda		#PH_PHASOR
+	jsr		SetPhasorMode
+
+	lda		#0
+	sta		notInPowerDown
+
+	; If SSI263 just powered-on then PD=1, and so D7=0
+	ldy		#SSI_DURPHON
+	lda		(SSI263Base),y
+	and		#REQ_NEW_DATA
+	beq		+	
+		; Not just powered-on or SSI263 not present
+		inc		notInPowerDown
+		lda		#CONTROL_H					; reg3: CTL[7]=1 - put chip back into power-down mode
+		ldy		#SSI_CTTRAMP
+		sta		(SSI263Base),y
++
+
+	;
+
+	sei
+
+	lda		#<@T263_Detect_ISR
+	ldx		#>@T263_Detect_ISR
+	jsr		SetIrqVector
+
+	ldx		#0
+
+@loop	; Bring SSI263 out of PD mode and time how long until D7=1
+		; NB. So far no other writes to this SSI263
+
+		lda		#$ff						; T1C = T1L = $FFFF
+		ldy		#SY6522_TIMER1L_COUNTER
+		sta		(MBTimer),y
+		iny									; SY6522_TIMER1H_COUNTER
+		sta		(MBTimer),y					; (and clears IFR.b6)
+
+		lda		#ACR_FREERUNNING
+		ldy		#SY6522_ACR
+		sta		(MBTimer),y					; Free-running timer
+
+		lda		#CONTROL_L+$00				; reg3: CTL[7]=0, ART[6:4]=$0, AMP[3:0]=$0
+		ldy		#SSI_CTTRAMP
+		sta		(SSI263Base),y
+		
+		lda		#0
+		sta		irqT1IntCount
+
+		; Busy wait for D7=1
+--			ldy		#SY6522_IFR
+			lda		(MBTimer),y
+			and		#IxR_TIMER1
+			beq		+
+				sta		(MBTimer),y			; clear T1 int
+				inc		irqT1IntCount
+				lda		irqT1IntCount
+				cmp		#10
+				bne		+
+				jmp		@timeout			; timeout => no SSI263 at this location
++			lda		(SSI263Base),y			; Y=$D (can be $0-$F)
+			and		#REQ_NEW_DATA
+			beq		--
+
+		; # T1 ints, T1H, T1L, isrFlag
+
+		ldy		#SY6522_TIMER1H_COUNTER
+		lda		(MBTimer),y
+		sta		irqT1H
+		dey									; Y=SY6522_TIMER1L_COUNTER
+		lda		(MBTimer),y					; (reading T1C_l clears IFR.b6)
+		sta		irqT1L
+		iny									; Y=SY6522_TIMER1H_COUNTER
+		lda		(MBTimer),y
+		sta		irqT1H2
+
+		jsr		CalcPhraseDuration
+
+		;
+		lda		#0
+		sta		isrFlag
+		cli
+		sei
+		lda		isrFlag
+		sta		phraseDuration+3
+		;
+
+		jsr		CopyResults					; Post: X+=4
+
+		lda		#CONTROL_H					; reg3: CTL[7]=1 - put chip back into power-down mode
+		ldy		#SSI_CTTRAMP
+		sta		(SSI263Base),y
+
+		cpx		#SUBBUFFER_SIZE
+		beq		@done
+		jmp		@loop
+
+@done	clc
+		lda		smc263_0+1
+		adc		#SUBBUFFER_SIZE
+		sta		smc263_0+1
+
+		ldx		resultsSlotInfoIdx
+		lda		SSI263BaseH
+		sta		RESULTS_SLOTINFO,x
+		inx
+		lda		SSI263BaseL
+		ora		notInPowerDown
+		sta		RESULTS_SLOTINFO,x
+		inx
+		stx		resultsSlotInfoIdx
+
+@timeout
+	lda		#PH_MOCKINGBOARD
+	jsr		SetPhasorMode
+	
+	lda		MBBaseL
+	pha
+	lda		MBTimerL
+	sta		MBBaseL
+	jsr		WaitT1OneShotUnderflow
+	pla
+	sta		MBBaseL
+
+	rts
+
+;------------------
+
+@T263_Detect_ISR
+
+	txa
+	pha
+	tya
+	pha
+
+	;------
+
+	inc		isrFlag
+
+	lda		#0
+	ldy		#SSI_INFLECT			; reg1
+	sta		(SSI263Base),y			; De-assert IRQ by writing to SSI263 reg1
+
+	;------
+
+	pla
+	tay
+	pla
+	tax
+
+	lda		$45		; for Apple II/II+
+	rti
+
+;------------------
+
+CopyResults
+	ldy		#0
+-			lda		phraseDuration,y
+smc263_0	sta		RESULTS_BUFFER,x
+			inx
+			iny
+			cpy		#4
+			bne		-
+	rts
+
+;------------------------------------------------------------------------------
+
+DisableSSI263
+; NB. Called from userland & ISR
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(SSI263Base),y
+
+	lda		#MODE_IRQ_DISABLED+$00	; DR1:DR0=0, P5:P0=$00
+	ldy		#SSI_DURPHON
+	sta		(SSI263Base),y
+
+	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ inactive
+	ldy		#SSI_CTTRAMP
+	sta		(SSI263Base),y
+
+	rts
+
+;------------------------------------------------------------------------------
+
+KickSSI263
+
+	lda		#$0C					; Peripheral for PA port Control: CA2 = low output (Pin18: Power Down/Reset)
+									; CA1 = negative active edge (input) (Pin4: A/!R)
+	ldy		#SY6522_PCR
+	sta		(MBBase),y
+
+	lda		#IxR_SSI263
+	ldy		#SY6522_IFR
+	sta		(MBBase),y				; clear CA1(Speech) IRQ after setting PCR
+
+KickSSI263_no_PCR
+
+	lda		#CONTROL_H
+	ldy		#SSI_CTTRAMP
+	sta		(SSI263Base),y
+
+	; Warning: stepping this won't yield an IRQ, since the phoneme completes before H->L (assuming prev mode=MODE_IRQ_DISABLED)
+	lda		#MODE_PHONEME_TRANSITIONED_INFLECTION+$00	; DR1:DR0=3 , P5:P0=$00
+	ldy		#SSI_DURPHON
+	sta		(SSI263Base),y
+
+	lda		#CONTROL_L				; H->L sets SSI263 operation mode = DR1:DR0, ie. IRQ active
+	ldy		#SSI_CTTRAMP
+	sta		(SSI263Base),y
+
+	rts
+
+;------------------------------------------------------------------------------
+
+PlaySSI263_no_PCR
+
+	ldy		#1
+	bne		+
+
+PlaySSI263
+; Pre: X:A = phoneme data
+;	MB mode    : MBBaseL = SY6522_A_BASE    / SY6522_B_BASE
+;	Phasor mode: MBBaseL = SY6522_A_PH_BASE / SY6522_B_BASE
+
+	ldy		#0
++	sty		zpTmp2
+
+	sta		SpeechDataL
+	stx		SpeechDataH
+
+	sei
+	inc		doingSpeech
+
+	lda		#0
+	sta		irqT1IntCount
+
+	lda		zpTmp2
+	bne		@noPCR1
+		jsr		KickSSI263
+		jmp		+
+@noPCR1	jsr		KickSSI263_no_PCR
++
+
+	lda		#$ff					; T1C = T1L = $FFFF
+	ldy		#SY6522_TIMER1L_COUNTER
+	sta		(MBTimer),y
+	iny								; SY6522_TIMER1H_COUNTER
+	sta		(MBTimer),y				; (and clears IFR.b6)
+
+	lda		#ACR_FREERUNNING
+	ldy		#SY6522_ACR
+	sta		(MBTimer),y				; Free-running timer
+
+	lda		#IER_SET|IxR_TIMER1
+	ldy		#SY6522_IER
+	sta		(MBTimer),y				; Enable Timer1 IRQ
+
+	lda		zpTmp2
+	bne		@noPCR2
+		lda		#IER_SET|IxR_SSI263
+		;ldy	#SY6522_IER
+		sta		(MBBase),y			; Enable CA1(Speech) IRQ
+@noPCR2
+
+	cli
+
+	rts
+
+;------------------------------------------------------------------------------
+
+CalcPhraseDuration
+
+	lda		irqT1IntCount
+	sta		phraseDuration+0			;# T1 ints
+
+	lda		irqT1H
+	cmp		irqT1H2
+	beq		+
+		; T1 underflow between T1H & T1H2, so use: T1=T1H|00
+		; and irqT1IntCount will account for the underflow
+		lda		#0
+		sta		irqT1L
+
+	; NB. normally for multi-byte subtraction you'd start with T1L, but since there's no borrow ($FFFF-HHLL) it's OK this way!
+	; (do it this way so that the order is: phraseDuration-H,M,L)
++	sec									; $FFFF - T1H|T1L
+	lda		#$ff
+	sbc		irqT1H
+	sta		phraseDuration+1			;T1H
+
+	lda		#$ff
+	sbc		irqT1L
+	sta		phraseDuration+2			;T1L
+
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+doingSpeech		!byte 0
+
+detectValid		!byte 0
+detectT1H		!byte 0
+detectT1L		!byte 0
+detectT1IntCount	!byte 0
+
+irqT1H			!byte 0
+irqT1L			!byte 0
+irqT1H2			!byte 0
+irqT1IntCount	!byte 0
+phraseDuration	!byte 0,0,0,0
+
+notInPowerDown	!byte 0
+resultsSlotInfoIdx	!byte 0

@@ -1,0 +1,5 @@
+// run "debug.txt"
+symuser clear
+symuser load
+
+bload "test",2000
