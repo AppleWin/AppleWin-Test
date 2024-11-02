@@ -7,6 +7,7 @@
 %1\applewin -log -load-state "%~dp0\audit-A2e.aws.yaml"
 %1\applewin -log -load-state "%~dp0\audit-A2e-enhanced.aws.yaml"
 CALL "v2\WOZ\test.bat" %1
+CALL "v2\SmartPort-firmware\test.bat" %1
 CALL "v2\HDD-RW-IO-Boundary\test.bat" %1
 CALL "v2\RGB card\test.bat" %1
 CALL "v2\CmdLineSwitches\test.bat" %1
@@ -15,7 +16,6 @@ CALL "v2\VidHD\test.bat" %1
 %1\applewin -log -load-state "%~dp0\irq-pending.aws.yaml"
 %1\applewin -log -load-state "%~dp0\6522-one-shot.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSI263-test.aws.yaml"
-%1\applewin -log -load-state "%~dp0\SmartPort-page-cross.aws.yaml"
 %1\applewin -log -load-state "%~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml" -alt-enter=open-apple-enter
 %1\applewin -log -load-state "%~dp0\4Play-slot4.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SNES_MAX-slot4.aws.yaml"

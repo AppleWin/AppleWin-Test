@@ -23,9 +23,6 @@ irq-pending.aws.yaml
 SSI263-test.aws.yaml
 . GH#777: 6 tests for the SSI263 testing both Mockingboard & Phasor modes
 
-SmartPort-page-cross.aws.yaml
-. GH#319: Test SmartPort (HDD) firmware when MLI crosses page
-
 Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 . GH#556: Test Hook Filter ie. emulator can detect these: ALT+ESC, ALT+SPACE, ALT+TAB
 . GH#556: Test: -alt-enter=open-apple-enter
@@ -323,6 +320,16 @@ dragon_wars.aws.yaml
 
 AppleColorCard-slideshow-lake.aws.yaml
 . GH#621: Test support for AppleColor card's 160-color pixel video mode
+
+=================================================
+
+SmartPort firmware:
+-------------------
+
+SmartPort-firmware.aws.yaml
+. GH#319: Test SmartPort (HDD) firmware when MLI crosses page
+. GH#1207: SmartPort: test Status (SP Controller & units), Read, Write & Format
+. BLK: test Status, Read, Write & Format
 
 =================================================
 
