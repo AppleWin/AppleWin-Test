@@ -1,0 +1,1181 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "SmartPort-firmware", plain
+!sl "SmartPort-firmware.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+!source "HardDiskDefs.a"
+
+UNIT_BLOCK_SIZE = $0008		; 4KiB (tiny unit size!)
+
+;------------------------------------------------------------------------------
+
+!zone code
+
+entrypoint
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	;
+
+	lda		#3			; 3 params
+	sta		param
+	lda		#1			; SP unit-1
+	sta		param_unit
+
+	;
+
+	lda		#0
+	sta		testNum
+	jsr		Test0
+	bcs		done
+
+	inc		testNum
+	jsr		Test1
+	bcs		done
+
+	inc		testNum
+	jsr		Test2
+	bcs		done
+
+	inc		testNum
+	jsr		Test3
+	bcs		done
+
+	inc		testNum
+	jsr		Test4
+	bcs		done
+
+	;
+
+	lda		#$10
+	sta		testNum
+	jsr		Test10
+	bcs		done
+
+	inc		testNum
+	jsr		Test11
+	bcs		done
+
+	inc		testNum
+	jsr		Test12
+	bcs		done
+
+	inc		testNum
+	jsr		Test13
+	bcs		done
+
+	inc		testNum
+	jsr		Test14
+	bcs		done
+
+	;
+
+	lda		#<msgOK
+	ldx		#>msgOK
+	jsr		Print
+
+	;
+
+done
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	rts
+
+;--------------------------------------
+
+Test0
+; Pre:
+; Post: C=0(OK), C=1(NG)
+
+	; Status - SmartPort Controller: Status Code=$00 (STATUS)
+	; Status - SmartPort Controller: Status Code=$01 (GET DCB) => must fail
+	; Status - SmartPort Controller: Status Code=$02 (GET NL)  => must fail
+	; Status - SmartPort Controller: Status Code=$03 (GET DIB)
+	; Status - Unit-1: Status Code=$03 (GET DIB)
+	; Status - Unit-2: Status Code=$03 (GET DIB)
+
+	;
+	; Status - SmartPort Controller: Status Code=$00 (STATUS)
+	;
+
+	lda		#0
+	sta		param_unit
+
+	lda		#$68
+	sta		param_mem_block_h
+
+	lda		#SP_Cmd_status_STATUS
+	sta		param_status_code
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0a_0	!byte	SP_Cmd_status
+mli0a_1	!byte	<param	; param_l
+mli0a_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_status
++
+
+	lda		$6800
+	cmp		#2			; 2 devices
+	beq		+
+	jmp		error_status
++
+
+	;
+	; Status - SmartPort Controller: Status Code=$01 (GET DCB)
+	;
+
+	lda		#SP_Cmd_status_GETDCB
+	sta		param_status_code
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0b_0	!byte	SP_Cmd_status
+mli0b_1	!byte	<param	; param_l
+mli0b_2	!byte	>param	; param_h
+!zone code
+	bcs		+	; expect cmd to fail
+	jmp		error_status
++
+
+	;
+	; Status - SmartPort Controller: Status Code=$02 (GET NL)
+	;
+
+	lda		#SP_Cmd_status_GETNL
+	sta		param_status_code
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0c_0	!byte	SP_Cmd_status
+mli0c_1	!byte	<param	; param_l
+mli0c_2	!byte	>param	; param_h
+!zone code
+	bcs		+	; expect cmd to fail
+	jmp		error_status
++
+
+	;
+	; Status - SmartPort Controller: Status Code=$03 (GET DIB)
+	;
+
+	lda		#SP_Cmd_status_GETDIB
+	sta		param_status_code
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0d_0	!byte	SP_Cmd_status
+mli0d_1	!byte	<param	; param_l
+mli0d_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_status
++
+
+	lda		#$08
+	sta		$fc
+	lda		#$68
+	sta		$fd
+	jsr		Test0_PrintStatusInfo
+	bcc		+
+	jmp		error_status
++
+	jsr		CROUT
+
+	;
+	; Status - Unit-n: Status Code=$03 (GET DIB)
+	;
+
+t0_next_unit
+	inc		param_unit
+
+	lda		#SP_Cmd_status_GETDIB
+	sta		param_status_code
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0e_0	!byte	SP_Cmd_status
+mli0e_1	!byte	<param	; param_l
+mli0e_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_status
++
+
+	lda		#$04
+	sta		$fc
+	lda		#$68
+	sta		$fd
+	jsr		Test0_PrintStatusInfo
+	bcc		+
+	jmp		error_status
++
+
+	lda		#' '+$80
+	jsr		COUT
+
+	;
+
+	ldx		$6800+0		; general status
+	jsr		PRNTX
+
+	ldx		$6800+3		; image size (hi)
+	jsr		PRNTX
+
+	ldx		$6800+2		; image size (med)
+	jsr		PRNTX
+
+	ldx		$6800+1		; image size (lo)
+	jsr		PRNTX
+
+	jsr		CROUT
+
+	lda		$6800+3		; image size (hi)
+	bne		@err
+	lda		$6800+2		; image size (med)
+	cmp		#>UNIT_BLOCK_SIZE
+	bne		@err
+	lda		$6800+1		; image size (lo)
+	cmp		#<UNIT_BLOCK_SIZE
+	beq		+
+@err
+	jmp		error_status_size
++
+
+	lda		param_unit
+	cmp		#2
+	bne		t0_next_unit
+
+	;
+
+	lda		#1
+	sta		param_unit
+
+	clc
+	rts
+
+;--------------------------------------
+
+Test0_PrintStatusInfo
+; Pre: $fc,$fd = L,H addr of common Status data
+; Post: C=0(OK), C=1(NG)
+
+	ldy		#0
+	lda		($fc),y		; string length (0-16 chars, but need at least 1 char)
+	bne		+
+		sec				; error
+		rts
++	cmp		#17
+	bcc		+
+		sec				; error
+		rts
++
+
+	;
+
+	ldy		#17
+	lda		($fc),y
+	pha
+	lda		#0
+	sta		($fc),y		; end-of-string: $00
+
+	lda		$fc
+	clc
+	adc		#1
+	ldx		$fd
+	jsr		Print		; (use "device type: $00" as end-of-string!)
+
+	lda		#' '+$80
+	jsr		COUT
+
+	;
+
+	pla
+	tax					; device type: $00
+	jsr		PRNTX
+
+	ldy		#18
+	lda		($fc),y
+	tax					; device subtype: $00
+	jsr		PRNTX
+
+	ldy		#19
+	lda		($fc),y
+	tax					; f/w version (major)
+	jsr		PRNTX
+
+	ldy		#20
+	lda		($fc),y
+	tax					; f/w version (minor)
+	jsr		PRNTX
+
+	clc
+	rts
+
+;--------------------------------------
+
+Test1
+; Pre:
+; Post: C=0(OK), C=1(NG)
+
+	; Read block $000000 to $6800, non page-cross
+	; Read block $000000 to $6A00, page-cross
+	; memcmp($6800, $6A00, 512)
+
+	jsr		Test1_init
+
+	;
+	; Read block $000000 to $6800, non page-cross
+	;
+
+	lda		#$68
+	sta		param_mem_block_h
+	lda		#$00
+	sta		param_disk_block_l
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli1a_0	!byte	SP_Cmd_readblock
+mli1a_1	!byte	<param	; param_l
+mli1a_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_read_non_px
++
+	lda		#$6a
+	sta		param_mem_block_h
+	jmp 	read_block_px
+
+	;
+	; Read block $000000 to $6A00, page-cross (AppleWin-GH#319)
+	;
+
+*=$61fd
+read_block_px
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli1b_0	!byte	SP_Cmd_readblock
+mli1b_1	!byte	<param	; param_l
+mli1b_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_read_px
++
+
+	;
+	; Compare $6800 & $6A00
+	;
+
+	jsr		Compare68and6A
+	bcc		+
+	jmp		error_compare
++
+
+;	clc
+	rts
+
+;------------------
+
+Test1_init
+
+	; init $6800-69FF & $6A00-6BFF
+	lda 	#0
+	sta		$fe
+	lda		#$68
+	sta		$ff
+	ldy		#0
+	lda		#0
+	ldx		#4		; 4x 256B pages = 2x 512B blocks
+	clc
+-			sta		($fe),y
+			adc		#1
+			iny
+			bne		-
+		inc		$ff
+		dex
+		bne		-
+
+	rts
+
+;--------------------------------------
+
+Test2
+; Pre: block $000000 read to [$6800..69FF] from Test1
+; Post: C=0(OK), C=1(NG)
+
+	; Write $6800 to block $000001
+	; Read block $000001 to $6A00
+	; memcmp($6800, $6A00, 512)
+
+	;
+	; Write $6800 to block $000001
+	;
+
+	lda		#$68
+	sta		param_mem_block_h
+	lda		#$01
+	sta		param_disk_block_l
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli2a_0	!byte	SP_Cmd_writeblock
+mli2a_1	!byte	<param	; param_l
+mli2a_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_write
++
+
+	;
+	; Read block $000001 to $6A00
+	;
+
+	lda		#$6A
+	sta		param_mem_block_h
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli2b_0	!byte	SP_Cmd_readblock
+mli2b_1	!byte	<param	; param_l
+mli2b_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_write
++
+
+	;
+	; Compare $6800 & $6A00
+	;
+
+	jsr		Compare68and6A
+	bcc		+
+	jmp		error_compare
++
+
+;	clc
+	rts
+
+;--------------------------------------
+
+Test3
+; Pre: block $000000 read to [$6800..69FF] from Test2
+; Post: C=0(OK), C=1(NG)
+
+	; Format HDD (low-level format cmd)
+	; Read block $000000 to $6A00
+	; Check $6A00 is all zeros
+	; Write $6800 to block $000000 (ie. restore boot block)
+
+	;
+	; Format HDD (low-level format cmd)
+	;
+
+	lda		#1			; 1 param
+	sta		param
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli3a_0	!byte	SP_Cmd_format
+mli3a_1	!byte	<param	; param_l
+mli3a_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_format
++
+
+	;
+	; Read block $000000 to $6A00
+	;
+
+	lda		#3			; 3 params
+	sta		param
+	lda		#$6A
+	sta		param_mem_block_h
+	lda		#$00
+	sta		param_disk_block_l
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli3b_0	!byte	SP_Cmd_readblock
+mli3b_1	!byte	<param	; param_l
+mli3b_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_write
++
+
+	;
+	; Check $6A00 is all zeros
+	;
+
+	jsr		CheckZeroAt6A00
+	bcc		+
+	jmp		error_checkzero
++
+
+	;
+	; Write $6800 to block $000000 (ie. restore boot block)
+	;
+
+	lda		#$68
+	sta		param_mem_block_h
+	lda		#$00
+	sta		param_disk_block_l
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli3c_0	!byte	SP_Cmd_writeblock
+mli3c_1	!byte	<param	; param_l
+mli3c_2	!byte	>param	; param_h
+!zone code
+	bcc		+
+	jmp		error_write
++
+
+;	clc
+	rts
+
+;--------------------------------------
+
+Test4
+; Pre:
+; Post: C=0(OK), C=1(NG)
+
+	; Using unit 2 (write protected):
+	; . Write $6800 to block $000001 => must fail
+	; . Format HDD (low-level format cmd) => must fail
+
+	lda		#2
+	sta		param_unit
+
+	;
+	; Write $6800 to block $000001 => must fail
+	;
+
+	lda		#$68
+	sta		param_mem_block_h
+	lda		#$01
+	sta		param_disk_block_l
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli4a_0	!byte	SP_Cmd_writeblock
+mli4a_1	!byte	<param	; param_l
+mli4a_2	!byte	>param	; param_h
+!zone code
+	bcs		+	; expect cmd to fail
+	jmp		error_write_wp
++
+
+	;
+	; Format HDD (low-level format cmd) => must fail
+	;
+
+	lda		#1			; 1 param
+	sta		param
+	jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli4b_0	!byte	SP_Cmd_format
+mli4b_1	!byte	<param	; param_l
+mli4b_2	!byte	>param	; param_h
+!zone code
+	bcs		+	; expect cmd to fail
+	jmp		error_format_wp
++
+
+	lda		#1
+	sta		param_unit
+
+	clc
+	rts
+
+;--------------------------------------
+
+Test10
+; Pre:
+; Post: C=0(OK), C=1(NG)
+
+	;
+	; BLK Status
+	;
+
+	lda		#BLK_Cmd_Status
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit0
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0		; (don't care)
+	sta		BLK_MemPtr+1		; (don't care)
+	sta		BLK_BlockNum+0		; (don't care)
+	sta		BLK_BlockNum+1		; (don't care)
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_status
++
+
+	cpx		#<UNIT_BLOCK_SIZE
+	bne		@err
+	cpy		#>UNIT_BLOCK_SIZE
+	beq		+
+@err
+	jmp		error_blk_status_size
+
++
+	clc
+	rts
+
+;--------------------------------------
+
+Test11
+; Pre:
+; Post: C=0(OK), C=1(NG)
+	
+	; BLK Read block $000000 to $6800
+	; BLK Read block $000000 to $6A00
+	; memcmp($6800, $6A00, 512)
+
+	jsr		Test1_init
+
+	;
+	; BLK Read block $000000 to $6800
+	;
+
+	lda		#BLK_Cmd_Read
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit0
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0
+	lda		#$68
+	sta		BLK_MemPtr+1
+	lda		#$00
+	sta		BLK_BlockNum+0
+	lda		#$00
+	sta		BLK_BlockNum+1
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_read
++
+
+	;
+	; BLK Read block $000000 to $6A00
+	;
+
+;	lda		#BLK_Cmd_Read
+;	sta		BLK_Cmd
+;	lda		#(SLOT*$10)+BLK_Unit0
+;	sta		BLK_UnitNum
+;	lda		#$00
+;	sta		BLK_MemPtr+0
+	lda		#$6A
+	sta		BLK_MemPtr+1
+;	lda		#$00
+;	sta		BLK_BlockNum+0
+;	lda		#$00
+;	sta		BLK_BlockNum+1
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_read
++
+
+	;
+	; Compare $6800 & $6A00
+	;
+
+	jsr		Compare68and6A
+	bcc		+
+	jmp		error_blk_compare
++
+
+;	clc
+	rts
+
+;--------------------------------------
+
+Test12
+; Pre: block $000000 read to [$6800..69FF] from Test11
+; Post: C=0(OK), C=1(NG)
+
+	; BLK Write $6800 to block $000001
+	; BLK Read block $000001 to $6A00
+	; memcmp($6800, $6A00, 512)
+
+	;
+	; BLK Write $6800 to block $000001
+	;
+
+	lda		#BLK_Cmd_Write
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit0
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0
+	lda		#$68
+	sta		BLK_MemPtr+1
+	lda		#$01
+	sta		BLK_BlockNum+0
+	lda		#$00
+	sta		BLK_BlockNum+1
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_write
++
+
+	;
+	; BLK Read block $000001 to $6A00
+	;
+
+	lda		#BLK_Cmd_Read
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit0
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0
+	lda		#$6A
+	sta		BLK_MemPtr+1
+;	lda		#$01
+;	sta		BLK_BlockNum+0
+;	lda		#$00
+;	sta		BLK_BlockNum+1
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_read
++
+
+	;
+	; Compare $6800 & $6A00
+	;
+
+	jsr		Compare68and6A
+	bcc		+
+	jmp		error_compare
++
+
+;	clc
+	rts
+
+;--------------------------------------
+
+Test13
+; Pre: block $000000 read to [$6800..69FF] from Test12
+; Post: C=0(OK), C=1(NG)
+
+	; BLK Format HDD (low-level format cmd)
+	; BLK Read block $000000 to $6A00
+	; Check $6A00 is all zeros
+	; BLK Write $6800 to block $000000 (ie. restore boot block)
+
+	;
+	; BLK Format HDD (low-level format cmd)
+	;
+
+	lda		#BLK_Cmd_Format
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit0
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0		; (don't care)
+	sta		BLK_MemPtr+1		; (don't care)
+	sta		BLK_BlockNum+0		; (don't care)
+	sta		BLK_BlockNum+1		; (don't care)
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_format
++
+
+	;
+	; BLK Read block $000000 to $6A00
+	;
+
+	lda		#BLK_Cmd_Read
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit0
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0
+	lda		#$6A
+	sta		BLK_MemPtr+1
+	lda		#$00
+	sta		BLK_BlockNum+0
+	lda		#$00
+	sta		BLK_BlockNum+1
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_read
++
+
+	;
+	; Check $6A00 is all zeros
+	;
+
+	jsr		CheckZeroAt6A00
+	bcc		+
+	jmp		error_checkzero
++
+
+	;
+	; Write $6800 to block $000000 (ie. restore boot block)
+	;
+
+	lda		#BLK_Cmd_Write
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit0
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0
+	lda		#$68
+	sta		BLK_MemPtr+1
+	lda		#$00
+	sta		BLK_BlockNum+0
+	lda		#$00
+	sta		BLK_BlockNum+1
+
+	jsr		ENTRYPOINT_BLOCK
+	bcc		+
+	jmp		error_blk_write
++
+
+;	clc
+	rts
+
+;--------------------------------------
+
+Test14
+; Pre:
+; Post: C=0(OK), C=1(NG)
+
+	; Using unit 2 (write protected):
+	; . BLK Write $6800 to block $000001 => must fail
+	; . BLK Format HDD (low-level format cmd) => must fail
+
+	;
+	; BLK Write $6800 to block $000001 => must fail
+	;
+
+	lda		#BLK_Cmd_Write
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit1
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0
+	lda		#$68
+	sta		BLK_MemPtr+1
+	lda		#$01
+	sta		BLK_BlockNum+0
+	lda		#$00
+	sta		BLK_BlockNum+1
+
+	jsr		ENTRYPOINT_BLOCK
+	bcs		+	; expect cmd to fail
+	jmp		error_blk_write
++
+
+	;
+	; BLK Format HDD (low-level format cmd) => must fail
+	;
+
+	lda		#BLK_Cmd_Format
+	sta		BLK_Cmd
+	lda		#(SLOT*$10)+BLK_Unit1
+	sta		BLK_UnitNum
+	lda		#$00
+	sta		BLK_MemPtr+0		; (don't care)
+	sta		BLK_MemPtr+1		; (don't care)
+	sta		BLK_BlockNum+0		; (don't care)
+	sta		BLK_BlockNum+1		; (don't care)
+
+	jsr		ENTRYPOINT_BLOCK
+	bcs		+	; expect cmd to fail
+	jmp		error_blk_format
++
+
+	clc
+	rts
+
+;--------------------------------------
+
+Compare68and6A
+	lda 	#0
+	sta		$fc
+	lda		#$68
+	sta		$fd
+
+	lda 	#0
+	sta		$fe
+	lda		#$6a
+	sta		$ff
+
+	ldy		#0
+	ldx		#2		; 2x 256B = 1x 512B block
+-			lda		($fc),y
+			cmp		($fe),y
+			bne		@error
+			iny
+			bne		-
+		inc		$fd
+		inc		$ff
+		dex
+		bne		-
+
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;
+
+CheckZeroAt6A00
+	lda 	#0
+	sta		$fc
+	lda		#$6a
+	sta		$fd
+
+	ldy		#0
+	ldx		#2		; 2x 256B = 1x 512B block
+-			lda		($fc),y
+			bne		@error
+			iny
+			bne		-
+		inc		$fd
+		dex
+		bne		-
+
+	clc
+	rts
+
+@error
+	sec
+	rts
+
+;--------------------------------------
+
+error_status
+	lda		#<msg0
+	ldx		#>msg0
+	bne		PrintError		; (bra)
+
+error_status_size
+	lda		#<msg0b
+	ldx		#>msg0b
+	bne		PrintError		; (bra)
+
+error_compare
+	lda		#<msg1
+	ldx		#>msg1
+	bne		PrintError		; (bra)
+
+error_read_non_px
+	lda		#<msg2
+	ldx		#>msg2
+	bne		PrintError		; (bra)
+
+error_read_px
+	lda		#<msg3
+	ldx		#>msg3
+	bne		PrintError		; (bra)
+
+error_read
+	lda		#<msg4
+	ldx		#>msg4
+	bne		PrintError		; (bra)
+
+error_write
+	lda		#<msg5
+	ldx		#>msg5
+	bne		PrintError		; (bra)
+
+error_format
+	lda		#<msg6
+	ldx		#>msg6
+	bne		PrintError		; (bra)
+
+error_checkzero
+	lda		#<msg7
+	ldx		#>msg7
+	bne		PrintError		; (bra)
+
+error_write_wp
+	lda		#<msg8
+	ldx		#>msg8
+	bne		PrintError		; (bra)
+
+error_format_wp
+	lda		#<msg9
+	ldx		#>msg9
+	bne		PrintError		; (bra)
+
+error_blk_status
+	lda		#<msgA
+	ldx		#>msgA
+	bne		PrintError		; (bra)
+
+error_blk_status_size
+	lda		#<msgB
+	ldx		#>msgB
+	bne		PrintError		; (bra)
+
+error_blk_read
+	lda		#<msgC
+	ldx		#>msgC
+	bne		PrintError		; (bra)
+
+error_blk_compare
+	lda		#<msgD
+	ldx		#>msgD
+	bne		PrintError		; (bra)
+
+error_blk_write
+	lda		#<msgE
+	ldx		#>msgE
+	bne		PrintError		; (bra)
+
+error_blk_format
+	lda		#<msgF
+	ldx		#>msgF
+	bne		PrintError		; (bra)
+
+PrintError
+; Pre: A(l),X(h) = msg addr
+	pha
+	txa
+	pha
+	;
+	lda		#<msgTest
+	ldx		#>msgTest
+	jsr		Print
+	ldx		testNum
+	jsr		PRNTX
+	lda		#':'+$80
+	jsr		COUT
+	;
+	pla
+	tax
+	pla
+	jsr		Print
+	sec
+	rts
+
+;--------------------------------------
+
+Print
+; Pre: A(l),X(h) = msg addr
+
+	sta		$fe
+	stx		$ff
+
+	ldy		#0
+@loop	lda		($fe),y
+		beq		+
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	@loop
++	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+saveFC:			!byte 0
+saveFD:			!byte 0
+saveFE:			!byte 0
+saveFF:			!byte 0
+
+testNum	!byte 0
+
+param
+	!byte	3	; param length
+param_unit
+	!byte	1	; unit
+	!byte	0	; mem_block_l
+param_mem_block_h
+	!byte	0	; mem_block_h
+param_disk_block_l
+param_status_code
+	!byte	0	; disk_block_l / status_code
+	!byte	0	; disk_block_m
+	!byte	0	; disk_block_h
+;param_end
+	!byte	$ff	; use $ff in case f/w tries to read 1 too many param bytes
+
+;--------------------------------------
+
+msgTest !text "Test#",0
+msgTestEnd !text 0
+
+msgOK !text "SmartPort firmware is OK",0xd,0xa
+msgOKEnd !text 0
+
+msg0 !text "Status error!",0xd,0xa
+msg0End !text 0
+
+msg0b !text "Status (result size) error!",0xd,0xa
+msg0bEnd !text 0
+
+msg1 !text "Comparison error!",0xd,0xa
+msg1End !text 0
+
+msg2 !text "Read error: block-0 (non-PX)!",0xd,0xa
+msg2End !text 0
+
+msg3 !text "Read error: block-0 (PX)!",0xd,0xa
+msg3End !text 0
+
+msg4 !text "Read error: block-1!",0xd,0xa
+msg4End !text 0
+
+msg5 !text "Write error: block-1!",0xd,0xa
+msg5End !text 0
+
+msg6 !text "Format error!",0xd,0xa
+msg6End !text 0
+
+msg7 !text "Block not zero error!",0xd,0xa
+msg7End !text 0
+
+msg8 !text "Write error: succeeded for write-protected disk!",0xd,0xa
+msg8End !text 0
+
+msg9 !text "Format error: succeeded for write-protected disk!",0xd,0xa
+msg9End !text 0
+
+msgA !text "BLK Status error!",0xd,0xa
+msgAEnd !text 0
+
+msgB !text "BLK Status (result size) error!",0xd,0xa
+msgBEnd !text 0
+
+msgC !text "BLK Read error: block-0!",0xd,0xa
+msgCEnd !text 0
+
+msgD !text "BLK Comparison error!",0xd,0xa
+msgDEnd !text 0
+
+msgE !text "BLK Write error: block-1!",0xd,0xa
+msgEEnd !text 0
+
+msgF !text "BLK Format error!",0xd,0xa
+msgFEnd !text 0

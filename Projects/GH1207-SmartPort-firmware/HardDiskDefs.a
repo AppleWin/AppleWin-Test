@@ -1,0 +1,49 @@
+SLOT = 7
+
+CARD_IO_BASE = $C080 + SLOT*16
+CARD_SLOTROM_BASE = $C000 + SLOT*256
+
+ENTRYPOINT_BLOCK     = CARD_SLOTROM_BASE + $0A
+ENTRYPOINT_SMARTPORT = CARD_SLOTROM_BASE + $0D
+
+
+;
+; From: AppleWin\firmware\HDD-SmartPort\HDC-SmartPort.a65
+;
+
+;--------------------------------------
+; SP commands
+;--------------------------------------
+SP_Cmd_status		 = $00
+SP_Cmd_status_STATUS	 = $00
+SP_Cmd_status_GETDCB	 = $01
+SP_Cmd_status_GETNL		 = $02
+SP_Cmd_status_GETDIB	 = $03
+SP_Cmd_readblock 	 = $01
+SP_Cmd_writeblock	 = $02
+SP_Cmd_format		 = $03
+SP_Cmd_control		 = $04
+SP_Cmd_init			 = $05
+SP_Cmd_open			 = $06
+SP_Cmd_close		 = $07
+SP_Cmd_read			 = $08
+SP_Cmd_write		 = $09
+
+SP_Cmd_extended		 = $40
+;--------------------------------------
+; ZP locations
+;--------------------------------------
+;Ptr1			 = $3C
+
+BLK_Cmd		 	 = $42
+BLK_Cmd_Status		 = $0
+BLK_Cmd_Read		 = $1
+BLK_Cmd_Write		 = $2
+BLK_Cmd_Format		 = $3
+
+BLK_UnitNum		 = $43
+BLK_MemPtr		 = $44
+BLK_BlockNum	 = $46
+
+BLK_Unit0		= (0<<7)
+BLK_Unit1		= (1<<7)

@@ -1,0 +1,20 @@
+IRQL	= $3FE
+IRQH	= $3FF
+
+;--------------------------------------
+
+SW_INTCXROM_DIS = $C006
+SW_INTCXROM_ENA = $C007
+SW_INTCXROM_R = $C015	; Active high
+
+SW_SLOTC3ROM_DIS = $C00A
+SW_SLOTC3ROM_ENA = $C00B
+SW_SLOTC3ROM_R = $C017	; Active high
+
+;--------------------------------------
+
+PRNTYX = $F940
+PRNTX = $F944
+WAIT = $FCA8
+CROUT = $FD8E		; send CR to current output device
+COUT = $FDED

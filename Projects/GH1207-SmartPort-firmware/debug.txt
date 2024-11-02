@@ -1,0 +1,79 @@
+// PWD: <root>\AppleWin-Test\Projects\GH1207-SmartPort-firmware
+// run "debug.txt"
+bload "SmartPort-firmware",6000
+
+db mli0a_0
+db mli0a_1
+db mli0a_2
+
+db mli0b_0
+db mli0b_1
+db mli0b_2
+
+db mli0c_0
+db mli0c_1
+db mli0c_2
+
+db mli0d_0
+db mli0d_1
+db mli0d_2
+
+db mli0e_0
+db mli0e_1
+db mli0e_2
+
+db mli1a_0
+db mli1a_1
+db mli1a_2
+
+db mli1b_0
+db mli1b_1
+db mli1b_2
+
+db mli2a_0
+db mli2a_1
+db mli2a_2
+
+db mli2b_0
+db mli2b_1
+db mli2b_2
+
+db mli3a_0
+db mli3a_1
+db mli3a_2
+
+db mli3b_0
+db mli3b_1
+db mli3b_2
+
+db mli3c_0
+db mli3c_1
+db mli3c_2
+
+db mli4a_0
+db mli4a_1
+db mli4a_2
+
+db mli4b_0
+db mli4b_1
+db mli4b_2
+
+asc Test:TestEnd
+asc msgOK:msgOKEnd
+asc msg0:msg0End
+asc msg0b:msg0bEnd
+asc msg1:msg1End
+asc msg2:msg2End
+asc msg3:msg3End
+asc msg4:msg4End
+asc msg5:msg5End
+asc msg6:msg6End
+asc msg7:msg7End
+asc msg8:msg8End
+asc msg9:msg9End
+asc msgA:msgAEnd
+asc msgB:msgBEnd
+asc msgC:msgCEnd
+asc msgD:msgDEnd
+asc msgE:msgEEnd
+asc msgF:msgFEnd
