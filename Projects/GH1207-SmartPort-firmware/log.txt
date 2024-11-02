@@ -1,0 +1,40 @@
+The log output from AppleWin (with HDD logging enabled)
++ annotated with [xx] for the test numbers.
+
+[00] ; SmartPort
+slot-7, HDD-0(00): Cmd=80 ST: 00 (statusCode: 00)
+slot-7, HDD-0(00): Cmd=80 ST: 21 (statusCode: 01)
+slot-7, HDD-0(00): Cmd=80 ST: 21 (statusCode: 02)
+slot-7, HDD-0(00): Cmd=80 ST: 00 (statusCode: 03)
+slot-7, HDD-1(01): Cmd=80 ST: 00 (statusCode: 03)
+slot-7, HDD-2(02): Cmd=80 ST: 00 (statusCode: 03)
+[01]
+slot-7, HDD-1(01): Cmd=81 RD: 00000000 (to addr: 6800)
+slot-7, HDD-1(01): Cmd=81 RD: 00000000 (to addr: 6A00)
+[02]
+slot-7, HDD-1(01): Cmd=82 WR: 00000001 (from addr: 6800) 
+slot-7, HDD-1(01): Cmd=81 RD: 00000001 (to addr: 6A00)
+[03]
+slot-7, HDD-1(01): Cmd=83 FORMAT: write-protected=0
+slot-7, HDD-1(01): Cmd=81 RD: 00000000 (to addr: 6A00)
+slot-7, HDD-1(01): Cmd=82 WR: 00000000 (from addr: 6800) 
+[04]
+slot-7, HDD-2(02): Cmd=82 WR: 00000001 (from addr: 6800) write-protected
+slot-7, HDD-2(02): Cmd=83 FORMAT: write-protected=1
+
+[10] ; BLK
+slot-7, HDD-0(70): Cmd=00 ST-BLK: 00
+[11]
+slot-7, HDD-0(70): Cmd=01 RD: 00000000 (to addr: 6800)
+slot-7, HDD-0(70): Cmd=01 RD: 00000000 (to addr: 6A00)
+[12]
+slot-7, HDD-0(70): Cmd=02 WR: 00000001 (from addr: 6800) 
+slot-7, HDD-0(70): Cmd=01 RD: 00000001 (to addr: 6A00)
+[13]
+slot-7, HDD-0(70): Cmd=03 FORMAT: write-protected=0
+slot-7, HDD-0(70): Cmd=01 RD: 00000000 (to addr: 6A00)
+slot-7, HDD-0(70): Cmd=02 WR: 00000000 (from addr: 6800) 
+[14]
+slot-7, HDD-1(F0): Cmd=02 WR: 00000001 (from addr: 6800) write-protected
+slot-7, HDD-1(F0): Cmd=03 FORMAT: write-protected=1
+
