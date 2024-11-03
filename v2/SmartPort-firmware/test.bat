@@ -2,6 +2,7 @@
 
 attrib +r "%~dp0\HDD-small(write-protected).hdv"
 %1\applewin -log -load-state "%~dp0\SmartPort-firmware.aws.yaml" -current-dir "%~dp0" -s7-empty-on-exit
+%1\applewin -log -load-state "%~dp0\SmartPort-firmware.aws.yaml" -load-state-ignore-hdc-fw -current-dir "%~dp0" -s7-empty-on-exit
 @ECHO Done v2 SmartPort-firmware tests
 @GOTO end
 

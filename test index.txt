@@ -331,6 +331,8 @@ SmartPort-firmware.aws.yaml
 . GH#1207: SmartPort: test Status (SP Controller & units), Read, Write & Format
 . BLK: test Status, Read, Write & Format
 
+NB. Done twice, with and without the HDC firmware from the save-state file.
+
 =================================================
 
 VidHD card:
