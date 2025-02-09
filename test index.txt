@@ -14,15 +14,6 @@ audit-A2e-enhanced.aws.yaml
 . Test LC, internal ROM soft switches, etc
 . NB. "audit-A2+-Saturn.aws.yaml" will have LC errors, as Saturn is different to the Apple LC.
 
-irq-pending.aws.yaml
-. GH#677: Test loading a save-state with a MB Timer1 interrupt pending
-6522-one-shot.aws.yaml
-. GH#567 & GH#765: 3 tests for 6522, including T1 one-shot test
-. Also has the 6522's (at $C480) TIMER1_LATCH=$0000 (which is problematic for MB detection)
-	- AppleWin 1.30.0.0 will convert this old save-state's latch to $FFFF.
-SSI263-test.aws.yaml
-. GH#777: 6 tests for the SSI263 testing both Mockingboard & Phasor modes
-
 Buttons_KeyData_AnyKeyDown-Test.aws.yaml
 . GH#556: Test Hook Filter ie. emulator can detect these: ALT+ESC, ALT+SPACE, ALT+TAB
 . GH#556: Test: -alt-enter=open-apple-enter
@@ -98,43 +89,11 @@ CPM2.2(56k)-2-mbasic.aws.yaml
 CPM2.2(56k)-3-GR-A2+.aws.yaml
 . GH#371: Z80 updating video in units of ~1000 cycles. Test for mixed GR/TEXT video.
 
-Cybernoid.aws.yaml
-. Mockingboard, mid-tune
-
-Cybernoid2-Phasor.aws.yaml
-. Phasor, mid-tune
-
-Cybernoid-TimerAtC480.aws.yaml
-. GH#309: Mockingboard, mid-tune using 6522 at $C480 for Timer1 interrupt
-
-Cybernoid(MBv3).aws.yaml
-. save-state: Mockingboard unit v3
-
-Cybernoid2(Phasorv3).aws.yaml
-. save-state: Phasor unit v3
-
-MB-Poll-IFR-Test.aws.yaml
-. GH#496: Test polling IFR.Timer1 (NB. Interrupt enable is off, ie. IER.Timer1=0)
-. Success is an "OK" message, otherwise crash to the monitor
-
-MB-Poll-IFR-Test2.aws.yaml
-. GH#496: dschmenk's MB player, polling IFR.Timer1
-. https://github.com/dschmenk/PLASMA/blob/master/src/mockingboard/mbtest-poll.po (165f16d)
-
 FANTAVISION.aws.yaml
 . Test: mouse
 
 HDD-32MB.aws.yaml
 . GH#348: Test HDD image >800KiB
-
-phasor-fugue.aws.yaml
-. Phasor, mid-tune
-
-phasor-speech.aws.yaml
-. Select 1 for "Dr Fay Zor" speech
-
-phasor-tone.aws.yaml
-. Phasor, mid-tone (ie. no more changes to AY regs occur after loading snapshot)
 
 SAM Slot 5.aws.yaml
 . Test SAM in slot 5
@@ -301,6 +260,69 @@ RamWorks_r4.aws.yaml
 
 RamWorksIII-256KB.aws.yaml
 . GH#1262: Test that 1st aux 64KB bank isn't corrupted (pages 0 & 1) when loading save-state.
+
+=================================================
+
+Mockingboard:
+-------------
+
+irq-pending.aws.yaml
+. GH#677: Test loading a save-state with a MB Timer1 interrupt pending
+
+6522-one-shot.aws.yaml
+. GH#567 & GH#765: 3 tests for 6522, including T1 one-shot test
+. Also has the 6522's (at $C480) TIMER1_LATCH=$0000 (which is problematic for MB detection)
+	- AppleWin 1.30.0.0 will convert this old save-state's latch to $FFFF.
+
+SSI263-test.aws.yaml
+. GH#777: 6 tests for the SSI263 testing both Mockingboard & Phasor modes
+
+Cybernoid.aws.yaml
+. Mockingboard, mid-tune
+
+Cybernoid2-Phasor.aws.yaml
+. Phasor, mid-tune
+
+Cybernoid-TimerAtC480.aws.yaml
+. GH#309: Mockingboard, mid-tune using 6522 at $C480 for Timer1 interrupt
+
+Cybernoid(MBv3).aws.yaml
+. save-state: Mockingboard unit v3
+
+[TODO] Cybernoid(MBv10).aws.yaml
+. save-state: Mockingboard unit v10
+
+Cybernoid2(Phasorv3).aws.yaml
+. save-state: Phasor unit v3
+
+MB-Poll-IFR-Test.aws.yaml
+. GH#496: Test polling IFR.Timer1 (NB. Interrupt enable is off, ie. IER.Timer1=0)
+. Success is an "OK" message, otherwise crash to the monitor
+
+MB-Poll-IFR-Test2.aws.yaml
+. GH#496: dschmenk's MB player, polling IFR.Timer1
+. https://github.com/dschmenk/PLASMA/blob/master/src/mockingboard/mbtest-poll.po (165f16d)
+
+phasor-fugue.aws.yaml
+. Phasor, mid-tune
+
+phasor-fugue(v9).aws.yaml
+. Phasor, mid-tune
+
+[TODO] phasor-fugue(v10).aws.yaml
+. Phasor, mid-tune
+
+phasor-speech.aws.yaml
+. Select 1 for "Dr Fay Zor" speech
+
+phasor-tone.aws.yaml
+. Phasor, mid-tone (ie. no more changes to AY regs occur after loading snapshot)
+
+SSI263-4x_phonemes_playing_continuously.aws.yaml
+. Mockingboards in slot 4 & slot 5: both with 2x SSI263s with phonemes continuously playing back (GH#1372)
+
+[TODO] mb-audit.aws.yaml
+. slot 4: Mockingboard, slot 5: Phasor
 
 =================================================
 

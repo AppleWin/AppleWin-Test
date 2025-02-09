@@ -10,12 +10,10 @@ CALL "v2\WOZ\test.bat" %1
 CALL "v2\SmartPort-firmware\test.bat" %1
 CALL "v2\HDD-RW-IO-Boundary\test.bat" %1
 CALL "v2\RGB card\test.bat" %1
+CALL "v2\Mockingboard\test.bat" %1
 CALL "v2\CmdLineSwitches\test.bat" %1
 CALL "v2\Video ROM\test.bat" %1
 CALL "v2\VidHD\test.bat" %1
-%1\applewin -log -load-state "%~dp0\irq-pending.aws.yaml"
-%1\applewin -log -load-state "%~dp0\6522-one-shot.aws.yaml"
-%1\applewin -log -load-state "%~dp0\SSI263-test.aws.yaml"
 %1\applewin -log -load-state "%~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml" -alt-enter=open-apple-enter
 %1\applewin -log -load-state "%~dp0\4Play-slot4.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SNES_MAX-slot4.aws.yaml"
@@ -39,19 +37,8 @@ CALL "v2\VidHD\test.bat" %1
 %1\applewin -log -load-state "%~dp0\CPM2.2(56k)-1.aws.yaml"
 %1\applewin -log -load-state "%~dp0\CPM2.2(56k)-2-mbasic.aws.yaml"
 %1\applewin -log -load-state "%~dp0\CPM2.2(56k)-3-GR-A2+.aws.yaml"
-%1\applewin -log -load-state "%~dp0\Cybernoid.aws.yaml"
-%1\applewin -log -load-state "%~dp0\Cybernoid2-Phasor.aws.yaml"
-%1\applewin -log -load-state "%~dp0\Cybernoid-TimerAtC480.aws.yaml"
-%1\applewin -log -load-state "%~dp0\Cybernoid(MBv3).aws.yaml"
-%1\applewin -log -load-state "%~dp0\Cybernoid2(Phasorv3).aws.yaml"
-%1\applewin -log -load-state "%~dp0\MB-Poll-IFR-Test.aws.yaml"
-%1\applewin -log -load-state "%~dp0\MB-Poll-IFR-Test2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\FANTAVISION.aws.yaml"
 %1\applewin -log -load-state "%~dp0\HDD-32MB.aws.yaml"
-%1\applewin -log -load-state "%~dp0\phasor-fugue.aws.yaml"
-%1\applewin -log -load-state "%~dp0\phasor-fugue(v9).aws.yaml"
-%1\applewin -log -load-state "%~dp0\phasor-speech.aws.yaml"
-%1\applewin -log -load-state "%~dp0\phasor-tone.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SAM Slot 5.aws.yaml"
 %1\applewin -log -load-state "%~dp0\Base64A.aws.yaml"
 %1\applewin -log -load-state "%~dp0\Pravets82.aws.yaml"
@@ -69,8 +56,9 @@ CALL "v2\VidHD\test.bat" %1
 %1\applewin -log -load-state "%~dp0\SSC-TCP-IN#2.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-TCP-tx-rx-tcp.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSC-COM2-tx-rx-tcp.aws.yaml"
-CALL v2\Memory\test.bat %1
-CALL v2\DiskFormat\test.bat %1
+CALL "v2\Memory\test.bat" %1
+CALL "v2\DiskFormat\test.bat" %1
+
 %1\applewin -log -load-state "%~dp0\Reset_defaults.aws.yaml"
 @ECHO Done v2 tests
 @GOTO end
