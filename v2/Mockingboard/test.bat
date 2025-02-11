@@ -15,6 +15,7 @@
 %1\applewin -log -load-state "%~dp0\phasor-speech.aws.yaml"
 %1\applewin -log -load-state "%~dp0\phasor-tone.aws.yaml"
 %1\applewin -log -load-state "%~dp0\SSI263-4x_phonemes_playing_continuously.aws.yaml"
+%1\applewin -log -load-state "%~dp0\SC01-2x_phonemes_playing_continuously.aws.yaml"
 
 @ECHO Done v2 Mockingboard tests
 @GOTO end
