@@ -10,7 +10,10 @@ audit-A2+-LC.aws.yaml
 audit-A2+-Saturn.aws.yaml
 audit-A2e.aws.yaml
 audit-A2e-enhanced.aws.yaml
-. https://github.com/zellyn/a2audit 1.06
+audit-A2e-enhanced-aux-empty.aws.yaml
+. currently failing, reported here: https://github.com/zellyn/a2audit/issues/18
+audit-A2e-enhanced-aux-std80.aws.yaml
+. https://github.com/zellyn/a2audit 1.07
 . Test LC, internal ROM soft switches, etc
 . NB. "audit-A2+-Saturn.aws.yaml" will have LC errors, as Saturn is different to the Apple LC.
 

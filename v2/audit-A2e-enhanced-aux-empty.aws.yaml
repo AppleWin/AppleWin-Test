@@ -1,0 +1,187 @@
+# Date-stamp: Sat May 31 11:11:11 2025
+
+---
+File_hdr:
+  Tag: AppleWin Save State
+  Version: 2
+
+Unit:
+  Type: Apple2
+  Version: 9
+  State:
+    Model: Enhanced Apple//e
+    CPU:
+      Type: 65C02
+      A: 0xFF
+      X: 0xFF
+      Y: 0xFF
+      P: 0x34
+      S: 0xFC
+      PC: 0xFA62
+      Cumulative Cycles: 0x0000000000000000
+      Defer IRQ By 1 Opcode: false
+    Joystick:
+      Joystick0 TrimX: 0
+      Joystick0 TrimY: 0
+      Joystick1 TrimX: 0 # not implemented yet
+      Joystick1 TrimY: 0 # not implemented yet
+      Paddle0 Inactive Cycle: 0x0000000000000000
+      Paddle1 Inactive Cycle: 0x0000000000000000
+      Paddle2 Inactive Cycle: 0x0000000000000000
+      Paddle3 Inactive Cycle: 0x0000000000000000
+    Keyboard:
+      Last Key: 0x00
+      Key Waiting: false
+    Speaker:
+      Last Cycle: 0x0000000000000000
+    Video:
+      Alt Char Set: false
+      Video Mode: 0x00000040
+      Cycles This Frame: 0
+      Video Refresh Rate: 1
+    Memory:
+      Memory Mode: 0x00000000
+      MMU LC Mode: 0x00000410
+      Last RAM Write: 0
+      IO_SELECT: 0x00
+      IO_SELECT_InternalROM: 0x00
+      Expansion ROM Type: 0
+      Peripheral ROM Slot: 0
+      Last Slot to Set Main Mem LC: 0
+      Annunciator0: false
+      Annunciator1: false
+      Annunciator2: false
+      Annunciator3: false
+    Main Memory:
+      0000: 00
+
+Unit:
+  Type: Auxiliary Slot
+  Version: 2
+  State:
+    Card: Empty
+    Version: 4
+
+Unit:
+  Type: Slots
+  Version: 1
+  State:
+    1:
+      Card: Generic Printer
+      Version: 1
+      State:
+        Inactivity: 0
+        Printer Idle Limit: 10
+        Print Filename: ""
+        Is File Open: false
+        Dump To Printer: false
+        Convert Encoding: false
+        Filter Unprintable: false
+        Printer Append: false
+        Enable Dump To Real Printer: false
+    2:
+      Card: Super Serial Card
+      Version: 2
+      State:
+        DIPSW Default:
+          Baud Rate: 9600
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: false
+          Interrupts: true
+        DIPSW Current:
+          Baud Rate: 9600
+          Firmware mode: 0
+          Stop Bits: 0
+          Byte Size: 8
+          Parity: 0
+          Linefeed: false
+          Interrupts: true
+        Control Byte: 0x00
+        Command Byte: 0x00
+        TX IRQ Pending: false
+        RX IRQ Pending: false
+        Written TX: true
+        Support DCD: false
+        Serial Port Name: ""
+    6:
+      Card: Disk][
+      Version: 9
+      State:
+        Current Drive: 0
+        Phases: 0x0
+        Enhance Disk: true
+        Floppy Latch: 0x00
+        Floppy Motor On: false
+        Last Cycle: 0x0000000000000000
+        Last Read Latch Cycle: 0x0000000000000000
+        LSS Shift Reg: 0x00
+        LSS Latch Delay: 0
+        LSS Sequencer Function: 0
+        Deferred Stepper Event: false
+        Deferred Stepper Address: 0x0000
+        Deferred Stepper Cycle: 0x0000000000000000
+        Format Track state:
+          Written Sector Address Fields: 0x0000
+          Write Track Start Index: 0x0000
+          Write Track Wrapped: false
+          Write Data Field Prologue Count: 0x00
+          Track State: 0x00
+          Last 3 bytes: 0x000000
+          Vol,Trk,Sec,Chk (4 and 4): 0x0000000000000000
+          Index (4 and 4): 0x0
+        Unit0:
+          Drive Connected: true
+          Phase: 0
+          Phase (precise): 0.000000
+          Head Window: 0x0
+          Last Stepper Cycle: 0x0000000000000000
+          Motor On Cycle: 0x0000000000000000
+          Spinning: 0
+          Write Light: 0
+          Floppy:
+            Filename: audit.dsk
+            Absolute Path: C:\Users\tomch\Old PC\D-Win7\Apple][\AppleWin\git\AppleWin-Test\v2\audit.dsk
+            Byte: 0x0000
+            Nibbles: 0x0000
+            Bit Offset: 0x00000000
+            Bit Count: 0x00000000
+            Extra Cycles: 0.000000
+            Write Protected: false
+            Track Image Data: 0
+            Track Image Dirty: 0
+        Unit1:
+          Drive Connected: true
+          Phase: 0
+          Phase (precise): 0.000000
+          Head Window: 0x0
+          Last Stepper Cycle: 0x0000000000000000
+          Motor On Cycle: 0x0000000000000000
+          Spinning: 0
+          Write Light: 0
+          Floppy:
+            Filename: ""
+            Absolute Path: ""
+            Byte: 0x0000
+            Nibbles: 0x0000
+            Bit Offset: 0x00000000
+            Bit Count: 0x00000000
+            Extra Cycles: 0.000000
+            Write Protected: false
+            Track Image Data: 0
+            Track Image Dirty: 0
+
+Unit:
+  Type: Miscellaneous
+  Version: 1
+  State:
+    No Slot Clock:
+      Clock Register Enabled: false
+      Write Enabled: true
+      Clock Register Mask: 0x0000000000000001
+      Clock Register: 0x0000000000000000
+      Comparison Register Mask: 0x0000000000000001
+      Comparison Register: 0x5CA33AC55CA33AC5
+...
