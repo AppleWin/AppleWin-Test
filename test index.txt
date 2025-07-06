@@ -323,9 +323,15 @@ phasor-tone.aws.yaml
 
 SSI263-4x_phonemes_playing_continuously.aws.yaml
 . Mockingboards in slot 4 & slot 5: both with 2x SSI263s with phonemes continuously playing back (GH#1372)
+. Phoneme=$00 to silence
+
+SSI263-4x_phonemes_playing_continuously-alt.aws.yaml
+. Mockingboards in slot 4 & slot 5: both with 2x SSI263s with phonemes continuously playing back (GH#1412)
+. CTL=1 to silence
 
 SC01-2x_phonemes_playing_continuously.aws.yaml
 . Mockingboards in slot 4 & slot 5: both with 1x SC01 with phonemes continuously playing back (GH#1372)
+. Phoneme=$3F to silence
 
 [TODO] mb-audit.aws.yaml
 . slot 4: Mockingboard, slot 5: Phasor
