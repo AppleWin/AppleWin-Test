@@ -264,7 +264,7 @@ saveFF			!byte 0
 
 param
 	!byte	3	; param length
-	!byte	0	; unit
+	!byte	1	; unit
 param_mem_block_l
 	!byte	0	; mem_block_l
 param_mem_block_h
