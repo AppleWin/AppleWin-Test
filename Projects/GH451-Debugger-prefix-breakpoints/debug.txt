@@ -1,0 +1,9 @@
+// PWD: <root>\AppleWin-Test\Projects\HDD-RW-IO-Boundary
+// run "debug.txt"
+bload "Debugger-prefix-breakpoints",6000
+
+;db mli0_0
+;db mli0_1
+;db mli0_2
+
+;asc msg0:msg0End

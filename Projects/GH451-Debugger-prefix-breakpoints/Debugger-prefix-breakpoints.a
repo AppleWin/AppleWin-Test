@@ -1,0 +1,289 @@
+;ACME 0.96.4
+
+!cpu 6502	; Compatible with all Apple2's
+!to "Debugger-prefix-breakpoints", plain
+!sl "Debugger-prefix-breakpoints.labels"
+*=$6000
+
+;------------------------------------------------------------------------------
+
+!source "AppleDefs.a"
+!source "HardDiskDefs.a"
+
+;------------------------------------------------------------------------------
+
+; Debugger breakpoint tests to check the address prefixes
+;
+; Enhanced //e, -aux rw3 (1MiB = 16x 64KiB), -s3 saturn (128KiB = 8x 16KiB)
+;
+; Tests: (DMA write / HDD read), LC is r/w & 4K-bank 2
+; . bpmw d000			: read block #1 to d000-d1ff [hit]
+; . bpmw 0/d200			: read block #1 to d200-d3ff [hit]
+; . bpmw 0/l1/d400		: read block #1 to d400-d5ff
+; . bpmw 0/l2/d600		: read block #1 to d600-d7ff [hit]
+; . bpmw 0/l1/d680,100	: read block #1 to d700-d900, BP range overlapping before d700, hit at d700
+; . bpmw 0/l1/d880,100	: read block #1 to d700-d900, BP range overlapping after  d700, hit at d880
+;
+; Tests: (DMA write / HDD read), LC is r/w & 4K-bank*1*
+; . bpmw d000			: read block #1 to d000-d1ff [hit]
+; . bpmw 0/d200			: read block #1 to d200-d3ff [hit]
+; . bpmw 0/l1/d400		: read block #1 to d400-d5ff [hit]
+; . bpmw 0/l2/d600		: read block #1 to d600-d7ff
+; . bpmw 0/l1/d680,100	: read block #1 to d700-d900, BP range overlapping before d700, hit at d700 [hit]
+; . bpmw 0/l1/d880,100	: read block #1 to d700-d900, BP range overlapping after  d700, hit at d880 [hit]
+;
+; Tests: (DMA read  / HDD write), LC is r/w & 4K-bank 2
+; . bpmr d800			: write block #1 to d800-d9ff [hit]
+; . bpmr 0/da00			: write block #1 to da00-dbff [hit]
+; . bpmr 0/l1/dc00		: write block #1 to dc00-ddff
+; . bpmr 0/l2/de00		: write block #1 to de00-dfff [hit]
+; . bpmr 0/l1/de80,100	: write block #1 to df00-e100, BP range overlapping before df00, hit at df00
+; . bpmr 0/l1/e080,100	: write block #1 to df00-e100, BP range overlapping after  df00, hit at e080 [hit]
+;
+; Tests: (DMA read  / HDD write), LC is r/w & 4K-bank*1*
+; . bpmr d800			: write block #1 to d800-d9ff [hit]
+; . bpmr 0/da00			: write block #1 to da00-dbff [hit]
+; . bpmr 0/l1/dc00		: write block #1 to dc00-ddff [hit]
+; . bpmr 0/l2/de00		: write block #1 to de00-dfff
+; . bpmr 0/l1/de80,100	: write block #1 to df00-e100, BP range overlapping before df00, hit at df00 [hit]
+; . bpmr 0/l1/e080,100	: write block #1 to df00-e100, BP range overlapping after  df00, hit at e080 [hit]
+;
+; Test: (CPU write to memory)
+; ...
+;
+; Test: (CPU read from memory)
+; ...
+;
+
+zpTmp = $fd
+
+!zone code
+
+entrypoint
+	lda		$fc
+	sta		saveFC
+	lda		$fd
+	sta		saveFD
+	lda		$fe
+	sta		saveFE
+	lda		$ff
+	sta		saveFF
+
+	;
+	; Reads from block #1, when LC is write-enabled
+	;
+
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	
+	lda		#2
+	sta		zpTmp
+
+rd_next_lc
+	lda		#<mem_blk_r_data
+	sta		$fe
+	lda		#>mem_blk_r_data
+	sta		$ff
+
+loop1	ldy		#0
+		lda		($fe),y
+		sta		param_mem_block_l
+		iny
+		lda		($fe),y
+		sta		param_mem_block_h
+		jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli0_0	!byte	CMD_READ
+mli0_1	!byte	<param	; param_l
+mli0_2	!byte	>param	; param_h
+!zone code
+		bcc		+
+		jmp error_read
++
+
+		lda		$fe
+		clc
+		adc		#SIZE_MEMBLK_DATA
+		sta		$fe
+		bcc		+
+			inc		$ff
++
+
+		ldy		#0
+		lda		($fe),y
+		iny
+		ora		($fe),y
+		bne		loop1
+
+	bit		$c08f
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+
+	dec		zpTmp
+	bne		rd_next_lc
+
+	;
+	; Writes to block #1, when LC is write-enabled
+	;
+
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+
+	lda		#2
+	sta		zpTmp
+
+wr_next_lc
+	lda		#<mem_blk_w_data
+	sta		$fe
+	lda		#>mem_blk_w_data
+	sta		$ff
+
+loop2	ldy		#0
+		lda		($fe),y
+		sta		param_mem_block_l
+		iny
+		lda		($fe),y
+		sta		param_mem_block_h
+		jsr 	ENTRYPOINT_SMARTPORT
+!zone data
+mli1_0	!byte	CMD_WRITE
+mli1_1	!byte	<param	; param_l
+mli1_2	!byte	>param	; param_h
+!zone code
+		bcc		+
+		jmp error_write
++
+
+		lda		$fe
+		clc
+		adc		#SIZE_MEMBLK_DATA
+		sta		$fe
+		bcc		+
+			inc		$ff
++
+
+		ldy		#0
+		lda		($fe),y
+		iny
+		ora		($fe),y
+		bne		loop2
+
+	bit		$c08f
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+
+	dec		zpTmp
+	bne		wr_next_lc
+
+	;
+
+success
+	lda		#<msg0
+	ldx		#>msg0
+	jsr		print
+	jmp		done
+
+error_read
+	lda		#<msg1
+	ldx		#>msg1
+	jsr		print
+	jmp		done
+
+error_write
+	lda		#<msg2
+	ldx		#>msg2
+	jsr		print
+	jmp		done
+
+	;
+
+done
+	lda		saveFC
+	sta		$fc
+	lda		saveFD
+	sta		$fd
+	lda		saveFE
+	sta		$fe
+	lda		saveFF
+	sta		$ff
+
+	rts
+
+;--------------------------------------
+
+; Pre: X:A = msg
+print
+	bit		$c081
+	bit		$c081		; Read ROM; write RAM; use $D000 bank 2 (RESET default)
+
+	sta		$fe
+	stx		$ff
+
+	ldy		#0
+.loop	lda		($fe),y
+		beq		.pdone
+		ora		#$80	; set high bit
+		tax
+		tya
+		pha
+		txa
+		jsr		COUT
+		pla
+		tay
+		iny
+		bne 	.loop
+.pdone
+	rts
+
+;------------------------------------------------------------------------------
+
+!zone data
+
+saveFC			!byte 0
+saveFD			!byte 0
+saveFE			!byte 0
+saveFF			!byte 0
+
+param
+	!byte	3	; param length
+	!byte	1	; unit
+param_mem_block_l
+	!byte	0	; mem_block_l
+param_mem_block_h
+	!byte	0	; mem_block_h
+	!byte	1	; disk_block_l
+	!byte	0	; disk_block_h
+
+SIZE_MEMBLK_DATA = 3
+
+!macro MEMBLK addr,carry {
+	!word	addr
+	!byte	carry
+}
+
+mem_blk_r_data
+	+MEMBLK	$be00,0	; save block 1 (expect C=0)
+	+MEMBLK	$d000,0	; (expect C=0)
+	+MEMBLK	$d200,0	; (expect C=0)
+	+MEMBLK	$d400,0	; (expect C=0)
+	+MEMBLK	$d600,0	; (expect C=0)
+	+MEMBLK	$d700,0	; (expect C=0)
+	+MEMBLK	$d700,0	; (expect C=0)
+	+MEMBLK $0000,0	;(end)
+
+mem_blk_w_data
+	+MEMBLK	$d800,0	; (expect C=0)
+	+MEMBLK	$da00,0	; (expect C=0)
+	+MEMBLK	$dc00,0	; (expect C=0)
+	+MEMBLK	$de00,0	; (expect C=0)
+	+MEMBLK	$df00,0	; (expect C=0)
+	+MEMBLK	$df00,0	; (expect C=0)
+	+MEMBLK	$be00,0	; restore block 1 (expect C=0)
+	+MEMBLK $0000,0	;(end)
+
+msg0 !text "HDD read & write tests OK",0xd,0xa
+msg0End !text 0
+
+msg1 !text "Read error for block 1!",0xd,0xa
+msg1End !text 0
+
+msg2 !text "Write error for block 1!",0xd,0xa
+msg2End !text 0
