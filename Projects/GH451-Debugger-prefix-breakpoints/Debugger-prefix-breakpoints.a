@@ -16,6 +16,8 @@
 ;
 ; Enhanced //e, -aux rw3 (1MiB = 16x 64KiB), -s3 saturn (128KiB = 8x 16KiB)
 ;
+; *** DMA tests ***
+;
 ; Tests: (DMA write / HDD read), LC is r/w & 4K-bank 2
 ; . bpmw d000			: read block #1 to d000-d1ff [hit]
 ; . bpmw 0/d200			: read block #1 to d200-d3ff [hit]
@@ -48,6 +50,14 @@
 ; . bpmr 0/l1/de80,100	: write block #1 to df00-e100, BP range overlapping before df00, hit at df00 [hit]
 ; . bpmr 0/l1/e080,100	: write block #1 to df00-e100, BP range overlapping after  df00, hit at e080 [hit]
 ;
+; *** CPU tests ***
+;
+; Test: (CPU PC)
+; . bp 0/l2/d000		; [hit]
+; . bp 0/l1/d008,2		; [hit x2]
+; . bp 1/l2/d010		; [hit]
+; . bp 1/l1/d018,2		; [hit x2]
+;
 ; Test: (CPU write to memory)
 ; ...
 ;
@@ -68,6 +78,10 @@ entrypoint
 	sta		saveFE
 	lda		$ff
 	sta		saveFF
+
+;
+; *** DMA tests ***
+;
 
 	;
 	; Reads from block #1, when LC is write-enabled
@@ -172,6 +186,61 @@ mli1_2	!byte	>param	; param_h
 
 	dec		zpTmp
 	bne		wr_next_lc
+
+;
+; *** CPU tests ***
+;
+
+CPUTests
+
+	lda 	#$60		; RTS
+
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d000
+
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d007
+	sta		$d008
+	sta		$d009
+	sta		$d00a
+
+	sta		$c009		; ENA: ALTZP & LC
+
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d010
+
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d017
+	sta		$d018
+	sta		$d019
+	sta		$d01a
+
+	sta		$c008		; DIS: ALTZP & LC
+
+	;
+
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	jsr		$d000
+
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	jsr		$d007		; no BP hit
+	jsr		$d008
+	jsr		$d009
+	jsr		$d00a		; no BP hit
+
+	sta		$c009		; ENA: ALTZP & LC
+
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	jsr		$d010
+
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	jsr		$d017		; no BP hit
+	jsr		$d018
+	jsr		$d019
+	jsr		$d01a		; no BP hit
+
+	sta		$c008		; DIS: ALTZP & LC
 
 	;
 
@@ -279,11 +348,11 @@ mem_blk_w_data
 	+MEMBLK	$be00,0	; restore block 1 (expect C=0)
 	+MEMBLK $0000,0	;(end)
 
-msg0 !text "HDD read & write tests OK",0xd,0xa
+msg0 !text "All tests OK - for HDD r/w & CPU r/w",0xd
 msg0End !text 0
 
-msg1 !text "Read error for block 1!",0xd,0xa
+msg1 !text "Read error for block 1!",0xd
 msg1End !text 0
 
-msg2 !text "Write error for block 1!",0xd,0xa
+msg2 !text "Write error for block 1!",0xd
 msg2End !text 0
