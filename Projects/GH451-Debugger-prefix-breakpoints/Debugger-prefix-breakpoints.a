@@ -57,6 +57,7 @@
 ; . bp 0/l1/d008,2		; [hit x2]
 ; . bp 1/l2/d010		; [hit]
 ; . bp 1/l1/d018,2		; [hit x2]
+; . bp rom/ff58			; [hit x2]
 ;
 ; Test: (CPU write to memory)
 ; ...
@@ -191,6 +192,8 @@ mli1_2	!byte	>param	; param_h
 ; *** CPU tests ***
 ;
 
+ROMRTS = $FF58
+
 CPUTests
 
 	lda 	#$60		; RTS
@@ -204,6 +207,7 @@ CPUTests
 	sta		$d008
 	sta		$d009
 	sta		$d00a
+	sta		ROMRTS		; main/lc
 
 	sta		$c009		; ENA: ALTZP & LC
 
@@ -215,32 +219,41 @@ CPUTests
 	sta		$d018
 	sta		$d019
 	sta		$d01a
+	sta		ROMRTS		; aux/lc
 
 	sta		$c008		; DIS: ALTZP & LC
 
 	;
 
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	jsr		$d000
+	jsr		$d000		; [hit]
 
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
 	jsr		$d007		; no BP hit
-	jsr		$d008
-	jsr		$d009
+	jsr		$d008		; [hit]
+	jsr		$d009		; [hit]
 	jsr		$d00a		; no BP hit
+	jsr		ROMRTS		; no BP hit
 
 	sta		$c009		; ENA: ALTZP & LC
 
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	jsr		$d010
+	jsr		$d010		; [hit]
 
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
 	jsr		$d017		; no BP hit
-	jsr		$d018
-	jsr		$d019
+	jsr		$d018		; [hit]
+	jsr		$d019		; [hit]
 	jsr		$d01a		; no BP hit
+	jsr		ROMRTS		; no BP hit
 
 	sta		$c008		; DIS: ALTZP & LC
+
+	bit		$c081		; Read ROM; write RAM; use $D000 bank 2 (RESET default)
+	jsr		ROMRTS		; [hit]
+
+	bit		$c082		; Read ROM; protected RAM
+	jsr		ROMRTS		; [hit]
 
 	;
 
