@@ -3,10 +3,12 @@ IRQH	= $3FF
 
 ;--------------------------------------
 
-SW_RAMRDOFF  = $C002
-SW_RAMRDON   = $C003
-SW_RAMWRTOFF = $C004
-SW_RAMWRTON  = $C005
+SW_80STOREOFF	= $C000
+SW_80STOREON	= $C001
+SW_RAMRDOFF		= $C002
+SW_RAMRDON		= $C003
+SW_RAMWRTOFF	= $C004
+SW_RAMWRTON		= $C005
 
 SW_INTCXROM_DIS = $C006
 SW_INTCXROM_ENA = $C007
@@ -15,6 +17,13 @@ SW_INTCXROM_R = $C015	; Active high
 SW_SLOTC3ROM_DIS = $C00A
 SW_SLOTC3ROM_ENA = $C00B
 SW_SLOTC3ROM_R = $C017	; Active high
+
+;--------------------------------------
+
+SW_PAGE2OFF		= $C054
+SW_PAGE2ON		= $C055
+SW_HIRESOFF		= $C056
+SW_HIRESON		= $C057
 
 ;--------------------------------------
 

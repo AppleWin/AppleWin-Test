@@ -54,7 +54,7 @@
 ;
 ; *** CPU tests ***
 ;
-; Test: (CPU PC)
+; Test: (CPU PC): using ALTZP, RAMRD & 80STORE/PAGE2 soft-switches
 ; . bp 0/l2/d000		; [hit]
 ; . bp 0/l1/d008,2		; [hit x2]
 ; . bp 1/l2/d010		; [hit]
@@ -62,6 +62,10 @@
 ; . bp rom/ff58			; [hit x2]
 ; . bp 0/bf00			; [hit]
 ; . bp 1/bf01			; [hit]
+; . bp 0/478			; [hit]
+; . bp 0/2000			; [hit]
+; . bp 1/479			; [hit]
+; . bp 1/2001			; [hit]
 ;
 ; Test: (CPU write to memory)
 ; ...
@@ -265,12 +269,22 @@ CPUTests
 	; 'bp' tests in main/aux $200-$BFFF using RAMRD/RAMWRT soft-switches
 	;
 
+	sta		SW_80STOREOFF
+
 	lda 	#$60		; RTS
 	ldx		#$00		; BRK
 
+	sta		$478		; RTS, BRK
+	stx		$479
+	sta		$2000		; RTS, BRK
+	stx		$2001
 	sta		$bf00		; RTS, BRK
 	stx		$bf01
 	sta		SW_RAMWRTON		; Write enable aux memory from $0200-$BFFF
+	stx		$478		; BRK, RTS
+	sta		$479
+	stx		$2000		; BRK, RTS
+	sta		$2001
 	stx		$bf00		; BRK, RTS
 	sta		$bf01
 	sta		SW_RAMWRTOFF	; Write enable main memory from $0200-$BFFF
@@ -289,15 +303,31 @@ CPUTests
 	sec					; C=1: main->aux
 	jsr		AUXMOVE
 
-	jsr		$bf00
-
+	; Test RAMRD
+	jsr		$bf00		; [hit]
 	sta		SW_RAMRDON		; Read enable aux memory from $0200-$BFFF
 	; Now running from aux (but stack in main mem)
-	jsr		$bf01
-
+	jsr		$bf01		; [hit]
 	sta		SW_RAMRDOFF		; Read enable main memory from $0200-$BFFF
 	; Now running from main
 
+	;
+	; 'bp' tests in main/aux TEXT/HIRES PAGE1 using 80STORE/PAGE2 soft-switches
+	;
+
+	; Test 80STORE/PAGE2
+	sta		SW_80STOREON
+	bit		SW_PAGE2OFF
+	bit		SW_HIRESOFF
+	jsr		$478		; [hit]
+	jsr		$2000		; [hit]
+	bit		SW_PAGE2ON
+	jsr		$479		; [hit]
+	bit		SW_HIRESON
+	jsr		$2001		; [hit]
+	bit		SW_PAGE2OFF
+	bit		SW_HIRESOFF
+	sta		SW_80STOREOFF
 
 CPUTests_end
 
