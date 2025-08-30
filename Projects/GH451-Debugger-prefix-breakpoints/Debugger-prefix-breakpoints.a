@@ -27,6 +27,7 @@
 ; . bpmw 0/l1/d880,100	: read block #1 to d700-d900, BP range overlapping after  d700, hit at d880
 ;
 ; Tests: (DMA write / HDD read), LC is r/w & 4K-bank*1*
+; NB. same BPs as 4K-bank 2 above
 ; . bpmw d000			: read block #1 to d000-d1ff [hit]
 ; . bpmw 0/d200			: read block #1 to d200-d3ff [hit]
 ; . bpmw 0/l1/d400		: read block #1 to d400-d5ff [hit]
@@ -43,6 +44,7 @@
 ; . bpmr 0/l1/e080,100	: write block #1 to df00-e100, BP range overlapping after  df00, hit at e080 [hit]
 ;
 ; Tests: (DMA read  / HDD write), LC is r/w & 4K-bank*1*
+; NB. same BPs as 4K-bank 2 above
 ; . bpmr d800			: write block #1 to d800-d9ff [hit]
 ; . bpmr 0/da00			: write block #1 to da00-dbff [hit]
 ; . bpmr 0/l1/dc00		: write block #1 to dc00-ddff [hit]
@@ -58,6 +60,8 @@
 ; . bp 1/l2/d010		; [hit]
 ; . bp 1/l1/d018,2		; [hit x2]
 ; . bp rom/ff58			; [hit x2]
+; . bp 0/bf00			; [hit]
+; . bp 1/bf01			; [hit]
 ;
 ; Test: (CPU write to memory)
 ; ...
@@ -192,9 +196,11 @@ mli1_2	!byte	>param	; param_h
 ; *** CPU tests ***
 ;
 
-ROMRTS = $FF58
-
 CPUTests
+
+	;
+	; 'bp' tests in main/aux LC using ALTZP & LC soft-switches
+	;
 
 	lda 	#$60		; RTS
 
@@ -254,6 +260,46 @@ CPUTests
 
 	bit		$c082		; Read ROM; protected RAM
 	jsr		ROMRTS		; [hit]
+
+	;
+	; 'bp' tests in main/aux $200-$BFFF using RAMRD/RAMWRT soft-switches
+	;
+
+	lda 	#$60		; RTS
+	ldx		#$00		; BRK
+
+	sta		$bf00		; RTS, BRK
+	stx		$bf01
+	sta		SW_RAMWRTON		; Write enable aux memory from $0200-$BFFF
+	stx		$bf00		; BRK, RTS
+	sta		$bf01
+	sta		SW_RAMWRTOFF	; Write enable main memory from $0200-$BFFF
+
+	; Duplicate CPU test code to same location in aux mem
+	lda		#<CPUTests
+	sta		$3c			; src start
+	sta		$42			; dst start
+	lda		#>CPUTests
+	sta		$3d			; src start
+	sta		$43			; dst start
+	lda		#<CPUTests_end
+	sta		$3e
+	lda		#>CPUTests_end
+	sta		$3f
+	sec					; C=1: main->aux
+	jsr		AUXMOVE
+
+	jsr		$bf00
+
+	sta		SW_RAMRDON		; Read enable aux memory from $0200-$BFFF
+	; Now running from aux (but stack in main mem)
+	jsr		$bf01
+
+	sta		SW_RAMRDOFF		; Read enable main memory from $0200-$BFFF
+	; Now running from main
+
+
+CPUTests_end
 
 	;
 

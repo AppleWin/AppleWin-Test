@@ -3,6 +3,11 @@ IRQH	= $3FF
 
 ;--------------------------------------
 
+SW_RAMRDOFF  = $C002
+SW_RAMRDON   = $C003
+SW_RAMWRTOFF = $C004
+SW_RAMWRTON  = $C005
+
 SW_INTCXROM_DIS = $C006
 SW_INTCXROM_ENA = $C007
 SW_INTCXROM_R = $C015	; Active high
@@ -13,5 +18,9 @@ SW_SLOTC3ROM_R = $C017	; Active high
 
 ;--------------------------------------
 
+AUXMOVE = $C311			; C=1 (main->aux), 3C/3D(src start), 3E/3F(src end), 42/43(dst start)
+
 WAIT = $FCA8
 COUT = $FDED
+
+ROMRTS = $FF58
