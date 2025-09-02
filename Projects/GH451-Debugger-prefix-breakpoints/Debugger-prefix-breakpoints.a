@@ -67,11 +67,21 @@
 ; . bp 1/479			; [hit]
 ; . bp 1/2001			; [hit]
 ;
-; Test: (CPU write to memory)
-; ...
-;
-; Test: (CPU read from memory)
-; ...
+; Test: (CPU r/w memory)
+; . bpm l1/d000
+; . bpm 0/l1/d001
+; . bpm 1/l2/d002
+; . bpm rom/d003
+; . bpmw l1/d004
+; . bpmw 0/l1/d005
+; . bpmw 1/l2/d006
+; . bpmw rom/d007
+; . bpmw 0/l1/d008,2
+; . bpmw 1/l2/d00a,3
+; . bpmr l1/d00d
+; . bpmr 0/l1/d00f,2
+; . bpmr 1/l2/d011,3
+; . bpmr rom/d015
 ;
 
 zpTmp = $fd
@@ -197,7 +207,7 @@ mli1_2	!byte	>param	; param_h
 	bne		wr_next_lc
 
 ;
-; *** CPU tests ***
+; *** CPU tests for 'bp' ***
 ;
 
 CPUTests
@@ -219,7 +229,7 @@ CPUTests
 	sta		$d00a
 	sta		ROMRTS		; main/lc
 
-	sta		$c009		; ENA: ALTZP & LC
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
 
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
 	sta		$d010
@@ -231,7 +241,7 @@ CPUTests
 	sta		$d01a
 	sta		ROMRTS		; aux/lc
 
-	sta		$c008		; DIS: ALTZP & LC
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 
 	;
 
@@ -245,7 +255,7 @@ CPUTests
 	jsr		$d00a		; no BP hit
 	jsr		ROMRTS		; no BP hit
 
-	sta		$c009		; ENA: ALTZP & LC
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
 
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
 	jsr		$d010		; [hit]
@@ -257,7 +267,7 @@ CPUTests
 	jsr		$d01a		; no BP hit
 	jsr		ROMRTS		; no BP hit
 
-	sta		$c008		; DIS: ALTZP & LC
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 
 	bit		$c081		; Read ROM; write RAM; use $D000 bank 2 (RESET default)
 	jsr		ROMRTS		; [hit]
@@ -330,6 +340,239 @@ CPUTests
 	sta		SW_80STOREOFF
 
 CPUTests_end
+	nop
+
+;
+; *** CPU tests for 'bpm' ***
+;
+
+test0
+	; bpm l1/d000
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d000		; no BP hit
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d000		; [hit]
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d000		; [hit]
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c088		; Read RAM; protected RAM, bank 1
+	sta		$d000		; [hit] - because "bpm" is r/w ("l1" => RAM, whether protected or not) - use "bpmw" instead if you want to ignore this [*1]
+	bit		$c08a		; Read ROM; protected RAM, bank 1
+	sta		$d000		; no BP hit
+
+test1
+	; bpm 0/l1/d001
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d001		; no BP hit
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d001		; [hit]
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d001		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c088		; Read RAM; protected RAM, bank 1
+	sta		$d001		; [hit] (see [*1] above)
+	bit		$c08a		; Read ROM; protected RAM, bank 1
+	sta		$d001		; no BP hit
+
+test2
+	; bpm 1/l2/d002
+	bit		$c08b
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d002		; no BP hit
+	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d002		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d002		; [hit]
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c080		; Read RAM; protected RAM, bank 2
+	sta		$d002		; no BP hit
+	bit		$c082		; Read ROM; protected RAM, bank 2
+	sta		$d002		; no BP hit
+
+test3
+	; bpm rom/d003
+	bit		$c08b
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d003		; no BP hit
+	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d002		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d003		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c080		; Read RAM; protected RAM, bank 2
+	sta		$d003		; no BP hit
+	bit		$c082		; Read ROM; protected RAM, bank 2
+	sta		$d003		; [hit]
+
+	; bpmw tests:
+
+test4
+	; bpmw l1/d004
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d004		; no BP hit
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d004		; [hit]
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d004		; [hit]
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c088		; Read RAM; protected RAM, bank 1
+	sta		$d004		; no BP hit
+	bit		$c08a		; Read ROM; protected RAM, bank 1
+	sta		$d004		; no BP hit
+
+test5
+	; bpmw 0/l1/d005
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d005		; no BP hit
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d005		; [hit]
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d005		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c088		; Read RAM; protected RAM, bank 1
+	sta		$d005		; no BP hit
+	bit		$c08a		; Read ROM; protected RAM, bank 1
+	sta		$d005		; no BP hit
+
+test6
+	; bpmw 1/l2/d006
+	bit		$c08b
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d006		; no BP hit
+	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d006		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d006		; [hit]
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c080		; Read RAM; protected RAM, bank 2
+	sta		$d006		; no BP hit
+	bit		$c082		; Read ROM; protected RAM, bank 2
+	sta		$d006		; no BP hit
+
+test7
+	; bpmw rom/d007
+	bit		$c08b
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d007		; no BP hit
+	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d007		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d007		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c080		; Read RAM; protected RAM, bank 2
+	sta		$d007		; no BP hit
+	bit		$c082		; Read ROM; protected RAM, bank 2
+	sta		$d007		; [hit]
+
+test8
+	; bpmw 0/l1/d008,2
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d008		; no BP hit
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d007		; no BP hit
+	sta		$d008		; [hit]
+	sta		$d009		; [hit]
+	sta		$d00a		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d008		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c088		; Read RAM; protected RAM, bank 1
+	sta		$d008		; no BP hit
+	bit		$c08a		; Read ROM; protected RAM, bank 1
+	sta		$d008		; no BP hit
+
+test9
+	; bpmw 1/l2/d00a,3
+	bit		$c08b
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	sta		$d00a		; no BP hit
+	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
+	sta		$d00a		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	sta		$d009		; no BP hit
+	sta		$d00a		; [hit]
+	sta		$d00b		; [hit]
+	sta		$d00c		; [hit]
+	sta		$d00d		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c080		; Read RAM; protected RAM, bank 2
+	sta		$d00a		; no BP hit
+	bit		$c082		; Read ROM; protected RAM, bank 2
+	sta		$d00a		; no BP hit
+
+	; bpmr tests:
+
+testA
+	; bpmr l1/d00d
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	bit		$d00d		; no BP hit
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	bit		$d00d		; [hit]
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	bit		$d00d		; [hit]
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c088		; Read RAM; protected RAM, bank 1
+	bit		$d00d		; [hit]
+	bit		$c08a		; Read ROM; protected RAM, bank 1
+	bit		$d00d		; no BP hit
+
+testB
+	; bpmr 0/l1/d00f,2
+	bit		$c083
+	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
+	bit		$d00f		; no BP hit
+	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+	bit		$d00e		; no BP hit
+	bit		$d00f		; [hit]
+	bit		$d010		; [hit]
+	bit		$d011		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	bit		$d00f		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c088		; Read RAM; protected RAM, bank 1
+	bit		$d00f		; [hit]
+	bit		$c08a		; Read ROM; protected RAM, bank 1
+	bit		$d00f		; no BP hit
+
+testC
+	; bpmr 1/l2/d011,3
+	bit		$c08b
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	bit		$d011		; no BP hit
+	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
+	bit		$d011		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	bit		$d00f		; no BP hit
+	bit		$d011		; [hit]
+	bit		$d012		; [hit]
+	bit		$d013		; [hit]
+	bit		$d014		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c080		; Read RAM; protected RAM, bank 2
+	bit		$d011		; no BP hit
+	bit		$c082		; Read ROM; protected RAM, bank 2
+	bit		$d011		; no BP hit
+
+testD
+	; bpmr rom/d015
+	bit		$c08b
+	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
+	bit		$d015		; no BP hit
+	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
+	bit		$d015		; no BP hit
+	sta		SW_ALTZPON	; ENA: ALTZP & LC
+	bit		$d015		; no BP hit
+	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c080		; Read RAM; protected RAM, bank 2
+	bit		$d015		; no BP hit
+	bit		$c082		; Read ROM; protected RAM, bank 2
+	bit		$d015		; [hit]
 
 	;
 
