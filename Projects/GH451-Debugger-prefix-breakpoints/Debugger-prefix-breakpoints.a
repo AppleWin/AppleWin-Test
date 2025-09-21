@@ -68,6 +68,7 @@
 ; . bp 1/2001			; [hit]
 ;
 ; Test: (CPU r/w memory)
+; NB. test0-testD all use the following BPs: (see the specific test for the BP hit pattern)
 ; . bpm l1/d000
 ; . bpm 0/l1/d001
 ; . bpm 1/l2/d002
@@ -82,6 +83,13 @@
 ; . bpmr 0/l1/d00f,2
 ; . bpmr 1/l2/d011,3
 ; . bpmr rom/d015
+;
+; *** RamWorks tests ***
+; TODO
+;
+;
+; *** Saturn tests ***
+; TODO
 ;
 
 zpTmp = $fd
