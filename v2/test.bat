@@ -11,6 +11,7 @@
 CALL "v2\WOZ\test.bat" %1
 CALL "v2\SmartPort-firmware\test.bat" %1
 CALL "v2\HDD-RW-IO-Boundary\test.bat" %1
+CALL "v2\Debugger-prefix-breakpoints\test.bat" %1
 CALL "v2\RGB card\test.bat" %1
 CALL "v2\Mockingboard\test.bat" %1
 CALL "v2\CmdLineSwitches\test.bat" %1

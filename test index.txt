@@ -203,6 +203,15 @@ cmd line switches:
 
 =================================================
 
+Debugger-prefix-breakpoints:
+----------------------------
+
+Debugger-prefix-breakpoints.aws.yaml
+. Test prefix breakpoints for main, aux, LC, ROM, RamWorks, Saturn
+. Source: DMA r/w, CPU PC, CPU memory r/w
+
+=================================================
+
 DiskFormat:
 -----------
 

@@ -1,0 +1,14 @@
+bpm l1/d000
+bpm 0/l1/d001
+bpm 1/l2/d002
+bpm rom/d003
+bpmw l1/d004
+bpmw 0/l1/d005
+bpmw 1/l2/d006
+bpmw rom/d007
+bpmw 0/l1/d008,2
+bpmw 1/l2/d00a,3
+bpmr l1/d00d
+bpmr 0/l1/d00f,2
+bpmr 1/l2/d011,3
+bpmr rom/d015

@@ -1,0 +1,12 @@
+bpmw d000		
+bpmw 0/d200		
+bpmw 0/l1/d400	
+bpmw 0/l2/d600	
+bpmw 0/l1/d680,100
+bpmw 0/l1/d880,100
+bpmr d800		
+bpmr 0/da00		
+bpmr 0/l1/dc00	
+bpmr 0/l2/de00	
+bpmr 0/l1/de80,100
+bpmr 0/l1/e080,100
