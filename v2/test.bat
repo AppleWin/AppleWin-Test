@@ -5,9 +5,10 @@
 %1\applewin -log -load-state "%~dp0\audit-A2+-LC.aws.yaml"
 %1\applewin -log -load-state "%~dp0\audit-A2+-Saturn.aws.yaml"
 %1\applewin -log -load-state "%~dp0\audit-A2e.aws.yaml"
-%1\applewin -log -load-state "%~dp0\audit-A2e-enhanced.aws.yaml"
 %1\applewin -log -load-state "%~dp0\audit-A2e-enhanced-aux-empty.aws.yaml"
 %1\applewin -log -load-state "%~dp0\audit-A2e-enhanced-aux-std80.aws.yaml"
+%1\applewin -log -load-state "%~dp0\audit-A2e-enhanced.aws.yaml"
+@REM Finish a2audit with '128K, Enhanced //e' so that Registry is in a default state for subsequent tests
 CALL "v2\WOZ\test.bat" %1
 CALL "v2\SmartPort-firmware\test.bat" %1
 CALL "v2\HDD-RW-IO-Boundary\test.bat" %1

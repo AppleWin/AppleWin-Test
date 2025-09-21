@@ -1,5 +1,6 @@
 @IF "%~1" == "" GOTO help
 
+@REM: Balance of Power & Wizardry III require 128K //e
 %1\applewin -log -d1 "%~dp0\Accolade's Comics - A.woz"
 %1\applewin -log -d1 "%~dp0\Balance of Power(OptTiming0x20) - Disk 1, Side A.woz"
 %1\applewin -log -d1 "%~dp0\Buzzard Bait (woz-a-day collection).zip"
