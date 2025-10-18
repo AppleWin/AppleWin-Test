@@ -8,6 +8,7 @@
 ;------------------------------------------------------------------------------
 
 !source "AppleDefs.a"
+!source "BreakpointCard.a"
 !source "HardDiskDefs.a"
 
 ;------------------------------------------------------------------------------
@@ -19,7 +20,8 @@
 ; *** DMA tests ***
 ;
 ; Tests: (DMA write / HDD read), LC is r/w & 4K-bank 2
-; . bpmw d000			: read block #1 to d000-d1ff [hit]
+; NB. leave $d000-d1ff without a watchpoint so that CPU tests can use this range
+; . bpmw da00			: read block #1 to da00-dbff [hit]
 ; . bpmw 0/d200			: read block #1 to d200-d3ff [hit]
 ; . bpmw 0/l1/d400		: read block #1 to d400-d5ff
 ; . bpmw 0/l2/d600		: read block #1 to d600-d7ff [hit]
@@ -28,7 +30,7 @@
 ;
 ; Tests: (DMA write / HDD read), LC is r/w & 4K-bank*1*
 ; NB. same BPs as 4K-bank 2 above
-; . bpmw d000			: read block #1 to d000-d1ff [hit]
+; . bpmw da00			: read block #1 to da00-dbff [hit]
 ; . bpmw 0/d200			: read block #1 to d200-d3ff [hit]
 ; . bpmw 0/l1/d400		: read block #1 to d400-d5ff [hit]
 ; . bpmw 0/l2/d600		: read block #1 to d600-d7ff
@@ -69,20 +71,20 @@
 ;
 ; Test: (CPU r/w memory)
 ; NB. test0-testD all use the following BPs: (see the specific test for the BP hit pattern)
-; . bpm l1/d000
-; . bpm 0/l1/d001
-; . bpm 1/l2/d002
-; . bpm rom/d003
-; . bpmw l1/d004
-; . bpmw 0/l1/d005
-; . bpmw 1/l2/d006
-; . bpmw rom/d007
-; . bpmw 0/l1/d008,2
-; . bpmw 1/l2/d00a,3
-; . bpmr l1/d00d
-; . bpmr 0/l1/d00f,2
-; . bpmr 1/l2/d011,3
-; . bpmr rom/d015
+; . bpm l1/d100
+; . bpm 0/l1/d101
+; . bpm 1/l2/d102
+; . bpm rom/d103
+; . bpmw l1/d104
+; . bpmw 0/l1/d105
+; . bpmw 1/l2/d106
+; . bpmw rom/d107
+; . bpmw 0/l1/d108,2
+; . bpmw 1/l2/d10a,3
+; . bpmr l1/d10d
+; . bpmr 0/l1/d10f,2
+; . bpmr 1/l2/d111,3
+; . bpmr rom/d115
 ;
 ; *** RamWorks tests ***
 ; TODO
@@ -92,11 +94,23 @@
 ; TODO
 ;
 
+zpStr = $fa
+zpStrH = $fb
+zpCount = $fc
 zpTmp = $fd
+zpPtr = $fe
+zpPtrH = $ff
 
 !zone code
 
 entrypoint
+	lda		#1
+	sta		cardDetected
+
+	lda		$fa
+	sta		saveFA
+	lda		$fb
+	sta		saveFB
 	lda		$fc
 	sta		saveFC
 	lda		$fd
@@ -106,6 +120,41 @@ entrypoint
 	lda		$ff
 	sta		saveFF
 
+	sei
+
+	lda		#<MyISR
+	sta		IRQL
+	lda		#>MyISR
+	sta		IRQH
+
+	lda		cardDetected	; User can manually disable use of card with: "6001:0"
+	beq		+
+		ldy		#BPCARD_REG_ID4
+-			tya
+			cmp		BPCARD_IO_BASE,y
+			bne		++
+			iny
+			cpy		#BPCARD_REG_ID15+1
+			bne		-
+			beq		+
+++		lda		#0
+		sta		cardDetected
++	lda		cardDetected
+	bne		+
+		lda		#<msg_noCard
+		ldx		#>msg_noCard
+		jsr		print
+		; Wait for keypress...
+-			lda		KBD
+			bpl		-
+		lda		KBDSTRB
++
+
+	bit		BPCARD_CMD_RESET
+;	bit		BPCARD_CMD_INTERCEPT_BY_CARD	; Not yet - otherwise can't single-step
+
+	cli
+
 ;
 ; *** DMA tests ***
 ;
@@ -114,50 +163,89 @@ entrypoint
 	; Reads from block #1, when LC is write-enabled
 	;
 
+	lda		#0
+	sta		testNum
+	lda		#0
+	sta		subTestNum
+
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	
+
+	lda		#<PreISR
+	sta		_6502_INTERRUPT_VECTOR_L
+	lda		#>PreISR
+	sta		_6502_INTERRUPT_VECTOR_H
+
 	lda		#2
 	sta		zpTmp
 
-rd_next_lc
 	lda		#<mem_blk_r_data
-	sta		$fe
+	sta		zpPtr
 	lda		#>mem_blk_r_data
-	sta		$ff
+	sta		zpPtrH
 
+rd_next_lc
 loop1	ldy		#0
-		lda		($fe),y
+		lda		(zpPtr),y		; # BPs
+		beq		+
+		sta		zpCount
+-			lda		#BPTYPE_DMA
+			sta		BPCARD_FIFO
+			ldx		#BP_DMA_PARAM_SIZE
+--				iny
+				lda		(zpPtr),y
+				sta		BPCARD_FIFO
+				dex
+				bne		--
+
+			dec		zpCount
+			bne		-
+		;
++		iny
+		lda		(zpPtr),y
 		sta		param_mem_block_l
 		iny
-		lda		($fe),y
+		lda		(zpPtr),y
 		sta		param_mem_block_h
-		jsr 	ENTRYPOINT_SMARTPORT
+		;
+		iny
+		sty		zpCount
+		lda		zpPtr
+		clc
+		adc		zpCount
+		sta		zpPtr
+		bcc		+
+			inc		zpPtrH
++		;
+		lda		cardDetected
+		beq		+
+			bit		BPCARD_CMD_INTERCEPT_BY_CARD
++		jsr 	ENTRYPOINT_SMARTPORT
 !zone data
 mli0_0	!byte	CMD_READ
 mli0_1	!byte	<param	; param_l
 mli0_2	!byte	>param	; param_h
 !zone code
+		bit		BPCARD_CMD_INTERCEPT_BY_DEBUGGER
 		bcc		+
 		jmp error_read
 +
 
-		lda		$fe
-		clc
-		adc		#SIZE_MEMBLK_DATA
-		sta		$fe
-		bcc		+
-			inc		$ff
-+
-
 		ldy		#0
-		lda		($fe),y
+		lda		(zpPtr),y
 		iny
-		ora		($fe),y
+		ora		(zpPtr),y
+		iny
+		ora		(zpPtr),y
 		bne		loop1
 
 	bit		$c08f
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+
+	lda		#<mem_blk_r_data2
+	sta		zpPtr
+	lda		#>mem_blk_r_data2
+	sta		zpPtrH
 
 	dec		zpTmp
 	bne		rd_next_lc
@@ -172,44 +260,73 @@ mli0_2	!byte	>param	; param_h
 	lda		#2
 	sta		zpTmp
 
-wr_next_lc
 	lda		#<mem_blk_w_data
-	sta		$fe
+	sta		zpPtr
 	lda		#>mem_blk_w_data
-	sta		$ff
+	sta		zpPtrH
 
+wr_next_lc
 loop2	ldy		#0
-		lda		($fe),y
+		lda		(zpPtr),y		; # BPs
+		beq		+
+		sta		zpCount
+-			lda		#BPTYPE_DMA
+			sta		BPCARD_FIFO
+			ldx		#BP_DMA_PARAM_SIZE
+--				iny
+				lda		(zpPtr),y
+				sta		BPCARD_FIFO
+				dex
+				bne		--
+
+			dec		zpCount
+			bne		-
+		;
++		iny
+		lda		(zpPtr),y
 		sta		param_mem_block_l
 		iny
-		lda		($fe),y
+		lda		(zpPtr),y
 		sta		param_mem_block_h
-		jsr 	ENTRYPOINT_SMARTPORT
+		;
+		iny
+		sty		zpCount
+		lda		zpPtr
+		clc
+		adc		zpCount
+		sta		zpPtr
+		bcc		+
+			inc		zpPtrH
++		;
+		lda		cardDetected
+		beq		+
+			bit		BPCARD_CMD_INTERCEPT_BY_CARD
++		jsr 	ENTRYPOINT_SMARTPORT
 !zone data
 mli1_0	!byte	CMD_WRITE
 mli1_1	!byte	<param	; param_l
 mli1_2	!byte	>param	; param_h
 !zone code
+		bit		BPCARD_CMD_INTERCEPT_BY_DEBUGGER
 		bcc		+
 		jmp error_write
 +
 
-		lda		$fe
-		clc
-		adc		#SIZE_MEMBLK_DATA
-		sta		$fe
-		bcc		+
-			inc		$ff
-+
-
 		ldy		#0
-		lda		($fe),y
+		lda		(zpPtr),y
 		iny
-		ora		($fe),y
+		ora		(zpPtr),y
+		iny
+		ora		(zpPtr),y
 		bne		loop2
 
 	bit		$c08f
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
+
+	lda		#<mem_blk_w_data2
+	sta		zpPtr
+	lda		#>mem_blk_w_data2
+	sta		zpPtrH
 
 	dec		zpTmp
 	bne		wr_next_lc
@@ -222,6 +339,45 @@ CPUTests
 
 	;
 	; 'bp' tests in main/aux LC using ALTZP & LC soft-switches
+	;
+
+	inc		testNum
+	lda		#0
+	sta		subTestNum
+
+	lda		#<cpu_pc_breakpoints
+	sta		zpPtr
+	lda		#>cpu_pc_breakpoints
+	sta		zpPtrH
+
+	bit		BPCARD_CMD_RESET	; flush FIFO from previous tests
+
+@next_bp
+		ldy		#0
+		lda		#BPTYPE_PC
+		sta		BPCARD_FIFO
+		ldx		#BP_CPU_PARAM_SIZE
+--			lda		(zpPtr),y
+			sta		BPCARD_FIFO
+			iny
+			dex
+			bne		--
+
+		lda		zpPtr
+		clc
+		adc		#BP_CPU_PARAM_SIZE
+		sta		zpPtr
+		bcc		+
+			inc		zpPtrH
++
+		ldy		#0
+		lda		(zpPtr),y
+		iny
+		ora		(zpPtr),y
+		iny
+		ora		(zpPtr),y
+		bne		@next_bp
+
 	;
 
 	lda 	#$60		; RTS
@@ -249,9 +405,19 @@ CPUTests
 	sta		$d01a
 	sta		ROMRTS		; aux/lc
 
+	lda		#<PreISR
+	sta		_6502_INTERRUPT_VECTOR_L
+	lda		#>PreISR
+	sta		_6502_INTERRUPT_VECTOR_H
+
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 
 	;
+
+	lda		cardDetected
+	beq		+
+		bit		BPCARD_CMD_INTERCEPT_BY_CARD
++
 
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
 	jsr		$d000		; [hit]
@@ -347,240 +513,299 @@ CPUTests
 	bit		SW_HIRESOFF
 	sta		SW_80STOREOFF
 
+	bit		BPCARD_CMD_INTERCEPT_BY_DEBUGGER
+
 CPUTests_end
 	nop
+
+MEMTests
 
 ;
 ; *** CPU tests for 'bpm' ***
 ;
 
+	inc		testNum
+	lda		#0
+	sta		subTestNum
+
+	lda		#<cpu_mem_breakpoints
+	sta		zpPtr
+	lda		#>cpu_mem_breakpoints
+	sta		zpPtrH
+
+	bit		BPCARD_CMD_RESET	; flush FIFO from previous tests
+
+@next_bp
+		ldy		#0
+		lda		#BPTYPE_MEM
+		sta		BPCARD_FIFO
+		ldx		#BP_MEM_PARAM_SIZE
+--			lda		(zpPtr),y
+			sta		BPCARD_FIFO
+			iny
+			dex
+			bne		--
+
+		lda		zpPtr
+		clc
+		adc		#BP_MEM_PARAM_SIZE
+		sta		zpPtr
+		bcc		+
+			inc		zpPtrH
++
+		ldy		#0
+		lda		(zpPtr),y
+		iny
+		ora		(zpPtr),y
+		iny
+		ora		(zpPtr),y
+		bne		@next_bp
+
+	;
+
+	lda		cardDetected
+	beq		+
+		bit		BPCARD_CMD_INTERCEPT_BY_CARD
++
+	;
+
 test0
-	; bpm l1/d000
+	; bpm l1/d100
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d000		; no BP hit
+	sta		$d100		; no BP hit
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d000		; [hit]
+	sta		$d100		; [hit]
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d000		; [hit]
+	sta		$d100		; [hit]
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c088		; Read RAM; protected RAM, bank 1
-	sta		$d000		; [hit] - because "bpm" is r/w ("l1" => RAM, whether protected or not) - use "bpmw" instead if you want to ignore this [*1]
+	sta		$d100		; [hit] - because "bpm" is r/w ("l1" => RAM, whether protected or not) - use "bpmw" instead if you want to ignore this [*1]
 	bit		$c08a		; Read ROM; protected RAM, bank 1
-	sta		$d000		; no BP hit
+	sta		$d100		; no BP hit
 
 test1
-	; bpm 0/l1/d001
+	; bpm 0/l1/d101
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d001		; no BP hit
+	sta		$d101		; no BP hit
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d001		; [hit]
+	sta		$d101		; [hit]
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d001		; no BP hit
+	sta		$d101		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c088		; Read RAM; protected RAM, bank 1
-	sta		$d001		; [hit] (see [*1] above)
+	sta		$d101		; [hit] (see [*1] above)
 	bit		$c08a		; Read ROM; protected RAM, bank 1
-	sta		$d001		; no BP hit
+	sta		$d101		; no BP hit
 
 test2
-	; bpm 1/l2/d002
+	; bpm 1/l2/d102
 	bit		$c08b
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d002		; no BP hit
+	sta		$d102		; no BP hit
 	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d002		; no BP hit
+	sta		$d102		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d002		; [hit]
+	sta		$d102		; [hit]
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c080		; Read RAM; protected RAM, bank 2
-	sta		$d002		; no BP hit
+	sta		$d102		; no BP hit
 	bit		$c082		; Read ROM; protected RAM, bank 2
-	sta		$d002		; no BP hit
+	sta		$d102		; no BP hit
 
 test3
-	; bpm rom/d003
+	; bpm rom/d103
 	bit		$c08b
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d003		; no BP hit
+	sta		$d103		; no BP hit
 	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d002		; no BP hit
+	sta		$d102		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d003		; no BP hit
+	sta		$d103		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c080		; Read RAM; protected RAM, bank 2
-	sta		$d003		; no BP hit
+	sta		$d103		; no BP hit
 	bit		$c082		; Read ROM; protected RAM, bank 2
-	sta		$d003		; [hit]
+	sta		$d103		; [hit]
 
 	; bpmw tests:
 
 test4
-	; bpmw l1/d004
+	; bpmw l1/d104
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d004		; no BP hit
+	sta		$d104		; no BP hit
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d004		; [hit]
+	sta		$d104		; [hit]
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d004		; [hit]
+	sta		$d104		; [hit]
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c088		; Read RAM; protected RAM, bank 1
-	sta		$d004		; no BP hit
+	sta		$d104		; no BP hit
 	bit		$c08a		; Read ROM; protected RAM, bank 1
-	sta		$d004		; no BP hit
+	sta		$d104		; no BP hit
 
 test5
-	; bpmw 0/l1/d005
+	; bpmw 0/l1/d105
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d005		; no BP hit
+	sta		$d105		; no BP hit
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d005		; [hit]
+	sta		$d105		; [hit]
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d005		; no BP hit
+	sta		$d105		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c088		; Read RAM; protected RAM, bank 1
-	sta		$d005		; no BP hit
+	sta		$d105		; no BP hit
 	bit		$c08a		; Read ROM; protected RAM, bank 1
-	sta		$d005		; no BP hit
+	sta		$d105		; no BP hit
 
 test6
-	; bpmw 1/l2/d006
+	; bpmw 1/l2/d106
 	bit		$c08b
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d006		; no BP hit
+	sta		$d106		; no BP hit
 	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d006		; no BP hit
+	sta		$d106		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d006		; [hit]
+	sta		$d106		; [hit]
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c080		; Read RAM; protected RAM, bank 2
-	sta		$d006		; no BP hit
+	sta		$d106		; no BP hit
 	bit		$c082		; Read ROM; protected RAM, bank 2
-	sta		$d006		; no BP hit
+	sta		$d106		; no BP hit
 
 test7
-	; bpmw rom/d007
+	; bpmw rom/d107
 	bit		$c08b
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d007		; no BP hit
+	sta		$d107		; no BP hit
 	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d007		; no BP hit
+	sta		$d107		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d007		; no BP hit
+	sta		$d107		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c080		; Read RAM; protected RAM, bank 2
-	sta		$d007		; no BP hit
+	sta		$d107		; no BP hit
 	bit		$c082		; Read ROM; protected RAM, bank 2
-	sta		$d007		; [hit]
+	sta		$d107		; [hit]
 
 test8
-	; bpmw 0/l1/d008,2
+	; bpmw 0/l1/d108,2
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d008		; no BP hit
+	sta		$d108		; no BP hit
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d007		; no BP hit
-	sta		$d008		; [hit]
-	sta		$d009		; [hit]
-	sta		$d00a		; no BP hit
+	sta		$d107		; no BP hit
+	sta		$d108		; [hit]
+	nop					; (Breakpoint card: need an opcode gap between BP hits)
+	sta		$d109		; [hit]
+	sta		$d10a		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d008		; no BP hit
+	sta		$d108		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c088		; Read RAM; protected RAM, bank 1
-	sta		$d008		; no BP hit
+	sta		$d108		; no BP hit
 	bit		$c08a		; Read ROM; protected RAM, bank 1
-	sta		$d008		; no BP hit
+	sta		$d108		; no BP hit
 
 test9
-	; bpmw 1/l2/d00a,3
+	; bpmw 1/l2/d10a,3
 	bit		$c08b
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	sta		$d00a		; no BP hit
+	sta		$d10a		; no BP hit
 	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
-	sta		$d00a		; no BP hit
+	sta		$d10a		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	sta		$d009		; no BP hit
-	sta		$d00a		; [hit]
-	sta		$d00b		; [hit]
-	sta		$d00c		; [hit]
-	sta		$d00d		; no BP hit
+	sta		$d109		; no BP hit
+	sta		$d10a		; [hit]
+	nop					; (Breakpoint card: need an opcode gap between BP hits)
+	sta		$d10b		; [hit]
+	nop					; (Breakpoint card: need an opcode gap between BP hits)
+	sta		$d10c		; [hit]
+	sta		$d10d		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c080		; Read RAM; protected RAM, bank 2
-	sta		$d00a		; no BP hit
+	sta		$d10a		; no BP hit
 	bit		$c082		; Read ROM; protected RAM, bank 2
-	sta		$d00a		; no BP hit
+	sta		$d10a		; no BP hit
 
 	; bpmr tests:
 
 testA
-	; bpmr l1/d00d
+	; bpmr l1/d10d
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	bit		$d00d		; no BP hit
+	bit		$d10d		; no BP hit
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
-	bit		$d00d		; [hit]
+	bit		$d10d		; [hit]
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	bit		$d00d		; [hit]
+	bit		$d10d		; [hit]
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c088		; Read RAM; protected RAM, bank 1
-	bit		$d00d		; [hit]
+	bit		$d10d		; [hit]
 	bit		$c08a		; Read ROM; protected RAM, bank 1
-	bit		$d00d		; no BP hit
+	bit		$d10d		; no BP hit
 
 testB
-	; bpmr 0/l1/d00f,2
+	; bpmr 0/l1/d10f,2
 	bit		$c083
 	bit		$c083		; Read RAM, write RAM, use $D000 bank 2
-	bit		$d00f		; no BP hit
+	bit		$d10f		; no BP hit
 	bit		$c08f		; Read RAM, write RAM, use $D000 bank 1
-	bit		$d00e		; no BP hit
-	bit		$d00f		; [hit]
-	bit		$d010		; [hit]
-	bit		$d011		; no BP hit
+	bit		$d10e		; no BP hit
+	bit		$d10f		; [hit]
+	nop					; (Breakpoint card: need an opcode gap between BP hits)
+	bit		$d110		; [hit]
+	bit		$d111		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	bit		$d00f		; no BP hit
+	bit		$d10f		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c088		; Read RAM; protected RAM, bank 1
-	bit		$d00f		; [hit]
+	bit		$d10f		; [hit]
 	bit		$c08a		; Read ROM; protected RAM, bank 1
-	bit		$d00f		; no BP hit
+	bit		$d10f		; no BP hit
 
 testC
-	; bpmr 1/l2/d011,3
+	; bpmr 1/l2/d111,3
 	bit		$c08b
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	bit		$d011		; no BP hit
+	bit		$d111		; no BP hit
 	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
-	bit		$d011		; no BP hit
+	bit		$d111		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	bit		$d00f		; no BP hit
-	bit		$d011		; [hit]
-	bit		$d012		; [hit]
-	bit		$d013		; [hit]
-	bit		$d014		; no BP hit
+	bit		$d10f		; no BP hit
+	bit		$d111		; [hit]
+	nop					; (Breakpoint card: need an opcode gap between BP hits)
+	bit		$d112		; [hit]
+	nop					; (Breakpoint card: need an opcode gap between BP hits)
+	bit		$d113		; [hit]
+	bit		$d114		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c080		; Read RAM; protected RAM, bank 2
-	bit		$d011		; no BP hit
+	bit		$d111		; no BP hit
 	bit		$c082		; Read ROM; protected RAM, bank 2
-	bit		$d011		; no BP hit
+	bit		$d111		; no BP hit
 
 testD
-	; bpmr rom/d015
+	; bpmr rom/d115
 	bit		$c08b
 	bit		$c08b		; Read RAM, write RAM, use $D000 bank 1
-	bit		$d015		; no BP hit
+	bit		$d115		; no BP hit
 	bit		$c087		; Read RAM, write RAM, use $D000 bank 2
-	bit		$d015		; no BP hit
+	bit		$d115		; no BP hit
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
-	bit		$d015		; no BP hit
+	bit		$d115		; no BP hit
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
 	bit		$c080		; Read RAM; protected RAM, bank 2
-	bit		$d015		; no BP hit
+	bit		$d115		; no BP hit
 	bit		$c082		; Read ROM; protected RAM, bank 2
-	bit		$d015		; [hit]
+	bit		$d115		; [hit]
+
+	;
+
+	bit		BPCARD_CMD_INTERCEPT_BY_DEBUGGER
 
 	;
 
@@ -605,6 +830,12 @@ error_write
 	;
 
 done
+	bit		BPCARD_CMD_INTERCEPT_BY_DEBUGGER
+
+	lda		saveFA
+	sta		$fa
+	lda		saveFB
+	sta		$fb
 	lda		saveFC
 	sta		$fc
 	lda		saveFD
@@ -619,16 +850,17 @@ done
 ;--------------------------------------
 
 ; Pre: X:A = msg
+; . ALTZPOFF (for main ZP)
 print
 	bit		$c081
 	bit		$c081		; Read ROM; write RAM; use $D000 bank 2 (RESET default)
 
-	sta		$fe
-	stx		$ff
+	sta		zpStr
+	stx		zpStrH
 
 	ldy		#0
-.loop	lda		($fe),y
-		beq		.pdone
+@loop	lda		(zpStr),y
+		beq		@done
 		ora		#$80	; set high bit
 		tax
 		tya
@@ -638,18 +870,162 @@ print
 		pla
 		tay
 		iny
-		bne 	.loop
-.pdone
+		bne 	@loop
+@done
 	rts
+
+;------------------------------------------------------------------------------
+
+!macro ISR_ENTRY {
+	txa
+	pha
+	tya
+	pha
+}
+
+!macro ISR_EXIT {
+	pla
+	tay
+	pla
+	tax
+
+	lda		$45		; for Apple II/II+
+	rti
+}
+
+;------------------------------------------------------------------------------
+
+; When LC is switched in, then need to preserve A-reg:
+PreISR
+	sta		$45
+	; drop into ISR...
+
+MyISR
+; Pre:
+;	6502 has pushed P
+;	Apple ROM has stored A to $45 (not Apple //e ROM!)
+;
+
+	+ISR_ENTRY
+
+!if 0 {
+	; NB. Only helps for DMA tests, as they do one BP at a time
+;	lda		subTestNum
+;	cmp		#1
+;	bne		@skip
+		bit		BPCARD_CMD_INTERCEPT_BY_DEBUGGER	; clear IRQ
+		nop
+;@skip
+}
+
+	lda		BPCARD_STATUS	; clear IRQ
+	bmi		@ok
+
+	sta		SW_ALTZPOFF
+
+	lda		#<msg3
+	ldx		#>msg3
+	jsr		print			; post: ROM enabled (LC RAM disabled)
+	ldx		testNum
+	jsr		PRNTX
+	lda		#$80+':'
+	jsr		COUT
+	ldx		subTestNum
+	jsr		PRNTX
+
+	lda		#<msg4
+	ldx		#>msg4
+	jsr		print
+	ldx		BPCARD_STATUS
+	jsr		PRNTX
+
+	jsr		CROUT
+
+-	jmp		-	; hang!
+
+	;
+
+@ok
+	; Save ZP & LC state
+	lda		_6502_INTERRUPT_VECTOR_H
+	pha
+	eor		#$ff
+	sta		_6502_INTERRUPT_VECTOR_H
+
+	bit		RDLCRAM			; b7: LC 1=RAM, 0=ROM
+	php
+	bit		RDLCBNK2		; b7: LC 1=bank2, 0=bank1
+	php
+	lda		RDALTZP			; b7: 1=ALTZPON, 0=ALTZPOFF
+	sta		saveAltZP
+
+	;
+
+	sta		SW_ALTZPOFF
+
+	lda		#<msg3
+	ldx		#>msg3
+	jsr		print			; post: ROM enabled (LC RAM disabled)
+	ldx		testNum
+	jsr		PRNTX
+	lda		#$80+':'
+	jsr		COUT
+	ldx		subTestNum
+	jsr		PRNTX
+
+	jsr		CROUT
+
+	;
+
+@done
+	; Restore ZP & LC state
+	ldy		#0
+	bit		saveAltZP
+	bpl		+
+	iny
++	sta		SW_ALTZPOFF,y
+
+	ldy		#0				; bank2
+	plp						; RDLCBNK2
+	bmi		+
+	ldy		#8				; bank1
+
++	sta		$C080,y			; RAM read, write protect
+	plp						; RDLCRAM
+	bmi		+
+	sta		$C082,y			; ROM read, write protect
+
++	pla
+	cmp		_6502_INTERRUPT_VECTOR_H
+	beq		+
+	ldx		$C083,y			; (Must be CPU read)
+	ldx		$C083,y			; RAM write enabled
+	sta		_6502_INTERRUPT_VECTOR_H
++
+
+	inc		subTestNum
+
+	+ISR_EXIT
+
+saveAltZP	!byte 0
 
 ;------------------------------------------------------------------------------
 
 !zone data
 
-saveFC			!byte 0
-saveFD			!byte 0
-saveFE			!byte 0
-saveFF			!byte 0
+saveFA		!byte 0
+saveFB		!byte 0
+saveFC		!byte 0
+saveFD		!byte 0
+saveFE		!byte 0
+saveFF		!byte 0
+
+testNum		!byte 0
+subTestNum	!byte 0
+
+cardDetected	!byte 0
+
+;------------------------------------------------------------------------------
 
 param
 	!byte	3	; param length
@@ -659,34 +1035,199 @@ param_mem_block_l
 param_mem_block_h
 	!byte	0	; mem_block_h
 	!byte	1	; disk_block_l
+	!byte	0	; disk_block_m
 	!byte	0	; disk_block_h
 
-SIZE_MEMBLK_DATA = 3
+	;
 
-!macro MEMBLK addr,carry {
-	!word	addr
-	!byte	carry
+BP_DMA_PARAM_SIZE = 5
+
+!macro NUM_BP num {
+	!byte 	num
 }
 
-mem_blk_r_data
-	+MEMBLK	$be00,0	; save block 1 (expect C=0)
-	+MEMBLK	$d000,0	; (expect C=0)
-	+MEMBLK	$d200,0	; (expect C=0)
-	+MEMBLK	$d400,0	; (expect C=0)
-	+MEMBLK	$d600,0	; (expect C=0)
-	+MEMBLK	$d700,0	; (expect C=0)
-	+MEMBLK	$d700,0	; (expect C=0)
-	+MEMBLK $0000,0	;(end)
+!macro BP_PARAMS_R bp_startAddr,bp_len {
+	!word	bp_startAddr
+	!word	bp_startAddr+bp_len-1
+	!byte	BPACCESS_W	; Write to mem (by HDD read)
+}
 
-mem_blk_w_data
-	+MEMBLK	$d800,0	; (expect C=0)
-	+MEMBLK	$da00,0	; (expect C=0)
-	+MEMBLK	$dc00,0	; (expect C=0)
-	+MEMBLK	$de00,0	; (expect C=0)
-	+MEMBLK	$df00,0	; (expect C=0)
-	+MEMBLK	$df00,0	; (expect C=0)
-	+MEMBLK	$be00,0	; restore block 1 (expect C=0)
-	+MEMBLK $0000,0	;(end)
+!macro BP_PARAMS_W bp_startAddr,bp_len {
+	!word	bp_startAddr
+	!word	bp_startAddr+bp_len-1
+	!byte	BPACCESS_R	; Read from mem (by HDD write)
+}
+
+!macro HDD_ADDR_DST addr {	; for HDD read
+	!word	addr
+}
+
+!macro HDD_ADDR_SRC addr {	; for HDD write
+	!word	addr
+}
+
+	;
+
+mem_blk_r_data				; test: 00:[00-05]
+	+NUM_BP 0
+		+HDD_ADDR_DST $be00			; save block 1
+	+NUM_BP 1
+		+BP_PARAMS_R $da00,1
+		+HDD_ADDR_DST $da00
+	+NUM_BP 1
+		+BP_PARAMS_R $d200,1
+		+HDD_ADDR_DST $d200
+	+NUM_BP 0
+		+HDD_ADDR_DST $d400
+	+NUM_BP 1
+		+BP_PARAMS_R $d600,1
+		+HDD_ADDR_DST $d600
+	+NUM_BP 0
+		+HDD_ADDR_DST $d700
+	!byte 0,0,0		;(end)
+
+mem_blk_r_data2				; test: 00:[06-0A]
+	+NUM_BP 1
+		+BP_PARAMS_R $da00,1
+		+HDD_ADDR_DST $da00
+	+NUM_BP 1
+		+BP_PARAMS_R $d200,1
+		+HDD_ADDR_DST $d200
+	+NUM_BP 1
+		+BP_PARAMS_R $d400,1
+		+HDD_ADDR_DST $d400
+	+NUM_BP 2
+		+BP_PARAMS_R $d680,$100		; [b#4] DMA to: 0/l1/d680-d6ff
+		+BP_PARAMS_R $d680,$100		; [b#4] DMA to: 0/l1/d700-d77f
+		+HDD_ADDR_DST $d600
+	+NUM_BP 2
+		+BP_PARAMS_R $d680,$100		; [b#4] DMA to: 0/l1/d700-d77f
+		+BP_PARAMS_R $d880,$100		; [b#5] DMA to: 0/l1/d880-d8ff
+		+HDD_ADDR_DST $d700
+	!byte 0,0,0		;(end)
+
+mem_blk_w_data				; test: 00:[0B-0F]
+	+NUM_BP 1
+		+BP_PARAMS_W $d800,1
+		+HDD_ADDR_SRC $d800
+	+NUM_BP 1
+		+BP_PARAMS_W $da00,1
+		+HDD_ADDR_SRC $da00
+	+NUM_BP 0
+		+HDD_ADDR_SRC $dc00
+	+NUM_BP 1
+		+BP_PARAMS_W $de00,1		; [b#9] DMA from: 0/l2/de00
+		+HDD_ADDR_SRC $de00
+	+NUM_BP 1
+		+BP_PARAMS_W $e080,$100		; [b#B] DMA from: 0/e080-e0ff
+		+HDD_ADDR_SRC $df00
+	!byte 0,0,0		;(end)
+
+mem_blk_w_data2				; test: 00:[10-14]
+	+NUM_BP 1
+		+BP_PARAMS_W $d800,1
+		+HDD_ADDR_SRC $d800
+	+NUM_BP 1
+		+BP_PARAMS_W $da00,1
+		+HDD_ADDR_SRC $da00
+	+NUM_BP 1
+		+BP_PARAMS_W $dc00,1
+		+HDD_ADDR_SRC $dc00
+	+NUM_BP 2
+		+BP_PARAMS_W $de80,$100		; [b#A] DMA from: 0/l1/de80-deff
+		+BP_PARAMS_W $de80,$100		; [b#A] DMA from: 0/l1/df00-df7f
+		+HDD_ADDR_SRC $de00
+	+NUM_BP 2
+		+BP_PARAMS_W $de80,$100		; [b#A] DMA from: 0/l1/df00-df7f
+		+BP_PARAMS_W $e080,$100		; [b#B] DMA from: 0/e000-e0ff
+		+HDD_ADDR_SRC $df00
+	+NUM_BP 0
+		+HDD_ADDR_SRC $be00			; restore block 1
+	!byte 0,0,0		;(end)
+
+;------------------------------------------------------------------------------
+
+BP_CPU_PARAM_SIZE = 5
+
+!macro CPU_BP_PARAMS bp_startAddr {
+	!word	bp_startAddr
+	!word	bp_startAddr
+	!byte	BPACCESS_R
+}
+
+cpu_pc_breakpoints			; test: 01:[00-0D]
+	+CPU_BP_PARAMS $d000
+	+CPU_BP_PARAMS $d008
+	+CPU_BP_PARAMS $d009
+	+CPU_BP_PARAMS $d010
+	+CPU_BP_PARAMS $d018
+	+CPU_BP_PARAMS $d019
+	+CPU_BP_PARAMS $ff58
+	+CPU_BP_PARAMS $ff58
+	+CPU_BP_PARAMS $bf00
+	+CPU_BP_PARAMS $bf01
+	+CPU_BP_PARAMS $478
+	+CPU_BP_PARAMS $2000
+	+CPU_BP_PARAMS $479
+	+CPU_BP_PARAMS $2001
+	!byte 0,0,0
+
+;------------------------------------------------------------------------------
+
+BP_MEM_PARAM_SIZE = 5
+
+!macro MEM_BP_PARAMS_R bp_startAddr {
+	!word	bp_startAddr
+	!word	bp_startAddr
+	!byte	BPACCESS_R
+}
+
+!macro MEM_BP_PARAMS_W bp_startAddr {
+	!word	bp_startAddr
+	!word	bp_startAddr
+	!byte	BPACCESS_W
+}
+
+!macro MEM_BP_PARAMS_RW bp_startAddr {
+	!word	bp_startAddr
+	!word	bp_startAddr
+	!byte	BPACCESS_RW
+}
+
+cpu_mem_breakpoints			; test: 02:[00-1A]
+	+MEM_BP_PARAMS_RW $d100
+	+MEM_BP_PARAMS_RW $d100
+	+MEM_BP_PARAMS_RW $d100
+	+MEM_BP_PARAMS_RW $d101
+	+MEM_BP_PARAMS_RW $d101
+	+MEM_BP_PARAMS_RW $d102
+	+MEM_BP_PARAMS_RW $d103
+	+MEM_BP_PARAMS_W $d104
+	+MEM_BP_PARAMS_W $d104
+	+MEM_BP_PARAMS_W $d105
+	+MEM_BP_PARAMS_W $d106
+	+MEM_BP_PARAMS_W $d107
+	+MEM_BP_PARAMS_W $d108
+	+MEM_BP_PARAMS_W $d109
+	+MEM_BP_PARAMS_W $d10a
+	+MEM_BP_PARAMS_W $d10b
+	+MEM_BP_PARAMS_W $d10c
+	+MEM_BP_PARAMS_R $d10d
+	+MEM_BP_PARAMS_R $d10d
+	+MEM_BP_PARAMS_R $d10d
+	+MEM_BP_PARAMS_R $d10f
+	+MEM_BP_PARAMS_R $d110
+	+MEM_BP_PARAMS_R $d10f
+	+MEM_BP_PARAMS_R $d111
+	+MEM_BP_PARAMS_R $d112
+	+MEM_BP_PARAMS_R $d113
+	+MEM_BP_PARAMS_R $d115
+	!byte 0,0,0
+
+;------------------------------------------------------------------------------
+
+msg_noCard !text "No Breakpoint card detected. Continue?",0xd
+msg_noCardEnd !text 0
 
 msg0 !text "All tests OK - for HDD r/w & CPU r/w",0xd
 msg0End !text 0
@@ -696,3 +1237,9 @@ msg1End !text 0
 
 msg2 !text "Write error for block 1!",0xd
 msg2End !text 0
+
+msg3 !text "Test #"
+msg3End !text 0
+
+msg4 !text " - BP mismatch. Status="
+msg4End !text 0

@@ -1,6 +1,10 @@
 IRQL	= $3FE
 IRQH	= $3FF
 
+_6502_INTERRUPT_VECTOR		= $FFFE	; IRQ & BRK
+_6502_INTERRUPT_VECTOR_L	= _6502_INTERRUPT_VECTOR
+_6502_INTERRUPT_VECTOR_H	= _6502_INTERRUPT_VECTOR+1
+
 ;--------------------------------------
 
 SW_80STOREOFF	= $C000
@@ -21,7 +25,15 @@ SW_SLOTC3ROM_DIS = $C00A
 SW_SLOTC3ROM_ENA = $C00B
 SW_SLOTC3ROM_R = $C017	; Active high
 
+RDLCBNK2 = $C011
+RDLCRAM = $C012
+
+RDALTZP = $C016
+
 ;--------------------------------------
+
+KBD = $C000
+KBDSTRB = $C010
 
 SW_PAGE2OFF		= $C054
 SW_PAGE2ON		= $C055
@@ -30,9 +42,13 @@ SW_HIRESON		= $C057
 
 ;--------------------------------------
 
-AUXMOVE = $C311			; C=1 (main->aux), 3C/3D(src start), 3E/3F(src end), 42/43(dst start)
+AUXMOVE = $C311		; C=1 (main->aux), 3C/3D(src start), 3E/3F(src end), 42/43(dst start)
 
+PRNTYX = $F940
+PRNTX = $F944
+HOME = $FC58
 WAIT = $FCA8
+CROUT = $FD8E		; send CR to current output device
 COUT = $FDED
 
 ROMRTS = $FF58

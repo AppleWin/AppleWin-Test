@@ -1,0 +1,11 @@
+bp 0/l2/d000
+bp 0/l1/d008,2
+bp 1/l2/d010
+bp 1/l1/d018,2
+bp rom/ff58
+bp 0/bf00
+bp 1/bf01
+bp 0/478
+bp 0/2000
+bp 1/479
+bp 1/2001
