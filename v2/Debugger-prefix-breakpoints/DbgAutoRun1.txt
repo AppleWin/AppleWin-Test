@@ -1,4 +1,4 @@
-bpmw d000		
+bpmw da00
 bpmw 0/d200		
 bpmw 0/l1/d400	
 bpmw 0/l2/d600	
