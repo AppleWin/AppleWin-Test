@@ -1,0 +1,110 @@
+; LITTLE TEXT WINDOW
+; Jim Sather (8/15/84)
+; Understanding the Apple IIe (page 3-26)
+;
+; NTSC VERSION
+
+!cpu 6502
+
+; NB. For !convtab to work, you need to create an ENV VAR, eg: (Yes - it needs forward slashes!)
+; ACME=C:/.../acme/ACME_Lib
+!convtab <apple ii/convtab.bin>
+
+
+H2      = $2C
+COLOR   = $30
+COL40   = $C00C
+VBLOFF  = $C019
+GRAFIX  = $C050
+TEXT    = $C051
+LORES   = $C056
+HLINE   = $F819
+
+!if APL{
+ * = $1EFC
+        !word $1F00		; address
+        !word length	; length must be exact!
+}
+
+ * = $1F00
+ 
+        STA COL40
+        LDA LORES
+        LDA #39
+        STA H2
+        LDA #$CC
+        STA COLOR
+        LDX #47
+FILL    LDY #0
+        TXA
+        JSR HLINE
+        DEX
+        BPL FILL
+        LDX #21
+MSGLP   LDA MSG,X
+        STA $5B1,X
+        DEX
+        BPL MSGLP
+POLL1   LDA VBLOFF
+        BMI POLL1
+POLL2   LDA VBLOFF
+        BPL POLL2
+        
+        LDA $00             ; 3
+LP17029 LDX #17             ; 2
+        JSR WAITX1K         ; 17000
+		JSR RTS1            ; 12
+        LDA $00             ; 3
+        LDA $00             ; 3
+        LDA VBLOFF          ; 4
+        NOP                 ; 2
+        BMI LP17029         ; 3/2
+        LDX #5              ; 2 - End VBl is precisely located
+        JSR WAITX1K
+        LDY #73
+        JSR WAITX10
+        PHA
+        PLA
+        LDA $FFFF
+        LDX #8
+TXTTIME LDA TEXT
+        JSR RTS1
+        LDA $00
+        NOP
+        LDA GRAFIX
+        LDY #3
+        JSR WAITX10
+        LDA $00
+        DEX
+        BNE TXTTIME
+        ; WAIT 17030 - 519 = 16511
+        LDX #16             ; 2
+        JSR WAITX1K         ; 16000 
+        LDY #50             ; 2         
+        JSR WAITX10         ; 500
+        LDX #8              ; 2
+        NOP                 ; 2
+        BNE TXTTIME         ; 3
+        
+LOOP10  BNE SKIP
+WAITX10 DEY
+SKIP    DEY
+        NOP
+        BNE LOOP10
+        RTS
+        
+LOOP1K  PHA
+        PLA
+        NOP
+        NOP
+WAITX1K LDY #98
+        JSR WAITX10
+        NOP
+        DEX
+        BNE LOOP1K
+RTS1    RTS
+        
+MSG     !byte 00
+        !text "*Little Text Window* "
+
+length = *-$1F00
