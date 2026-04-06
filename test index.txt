@@ -231,6 +231,15 @@ DOS3.3_init_enh_nib.aws.yaml
 DOS3.2.1_init_enh_nib.aws.yaml
 . GH#537: Test DOS 3.2.1 INIT
 
+
+=================================================
+
+FileFormat:
+-----------
+
+.apl file format
+. ntsc-sather.apl -60hz -model=apple2ee
+
 =================================================
 
 HDD RW IO Boundary:

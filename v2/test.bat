@@ -9,6 +9,7 @@
 %1\applewin%2 -log -load-state "%~dp0\audit-A2e-enhanced-aux-std80.aws.yaml"
 %1\applewin%2 -log -load-state "%~dp0\audit-A2e-enhanced.aws.yaml"
 @REM Finish a2audit with '128K, Enhanced //e' so that Registry is in a default state for subsequent tests
+CALL "v2\FileFormat\test.bat" %1 %2
 CALL "v2\WOZ\test.bat" %1 %2
 CALL "v2\SmartPort-firmware\test.bat" %1 %2
 CALL "v2\HDD-RW-IO-Boundary\test.bat" %1 %2
