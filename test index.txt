@@ -237,8 +237,8 @@ DOS3.2.1_init_enh_nib.aws.yaml
 FileFormat:
 -----------
 
-.apl file format
-. ntsc-sather.apl -60hz -model=apple2ee
+.apl file format (from GH654-Sathers-LittleTextWindow)
+. ntsc-sather.apl -60hz -model apple2ee
 
 =================================================
 
