@@ -112,7 +112,7 @@ rerun
 	jsr		PrintNotRAM
 
 exit
-	lda		$C082	; Read ROM; no write
+	jsr		ResetAllLCs
 	rts
 
 ;------------------
@@ -142,7 +142,7 @@ DoTests
 	bcs		@done
 
 @done
-	lda		$C082	; Read ROM; no write
+	jsr		ResetAllLCs
 	rts
 
 ;------------------
@@ -195,12 +195,14 @@ Test0
 ;------------------
 
 Test1
-; Set slot0 card: RAM enabled & write enabled
+; Set slot0 card: ROM enabled & write protected & WRTCOUNT=1
 ; Set slot3 card: RAM enabled & write protected
 ; <save-state>
 ; <load-state>
 ; Check slot0 card
 ; Check slot3 card
+
+	jsr		ResetAllLCs
 
 	ldx		#SLOT3
 	jsr		SetCardBaseForSlot
@@ -217,6 +219,11 @@ Test1
 	beq		@error
 	dec		$D000
 
+	lda		$C082			; slot0: Read ROM, write protect (so not driving bus on a read)
+							; slot0: WRTCOUNT=0
+	lda		$C081			; slot0: Read ROM, write protect (so not driving bus on a read)
+							; slot0: WRTCOUNT=1
+
 	ldy		#4
 	lda		(CardBase),y	; Saturn: 16K bank 0
 	ldy		#0
@@ -232,9 +239,13 @@ Test1
 	cmp		$D000
 	bne		@error
 
+	ldy		#2
+	lda		(CardBase),y	; Saturn: Read ROM, write protect, 4K bank 2 (so not driving bus on a read)
+
 	; Check that the slot0 card's LC memmode bits got correctly reloaded from save-state
-							; Pre: slot0: WRTCOUNT=2
+							; Pre: slot0: WRTCOUNT=1
 	lda		$C083			; slot0: Read RAM, write enable (4K bank 2) - only a single access req'd
+							; slot0: WRTCOUNT=2
 
 	lda		#$80			; slot0:$80
 	cmp		$D000
@@ -255,12 +266,14 @@ Test1
 ;------------------
 
 Test2
-; Set slot3 card: RAM enabled & write enabled
+; Set slot3 card: ROM enabled & write protected & WRTCOUNT=1
 ; Set slot0 card: RAM enabled & write protected
 ; <save-state>
 ; <load-state>
 ; Check slot3 card
 ; Check slot0 card
+
+	jsr		ResetAllLCs
 
 	ldx		#SLOT3
 	jsr		SetCardBaseForSlot
@@ -280,6 +293,13 @@ Test2
 	beq		@error
 	dec		$D000
 
+	ldy		#2
+	lda		(CardBase),y	; Saturn: Read ROM, write protect (so not driving bus on a read)
+							; Saturn: WRTCOUNT=0
+	ldy		#1
+	lda		(CardBase),y	; Saturn: Read ROM, write protect (so not driving bus on a read)
+							; Saturn: WRTCOUNT=1
+
 	lda		$C080			; slot0: Read RAM, write protect (4K bank 2)
 
 	nop						; *** manually save-state here ***
@@ -292,10 +312,15 @@ Test2
 	cmp		$D000
 	bne		@error
 
+	lda		$C082			; slot0: Read ROM, write protect (4K bank 2) (so not driving bus on a read)
+
 	; Check that the slot3 card's LC memmode bits got correctly reloaded from save-state
-							; Pre: slot3: WRTCOUNT=2
+							; Pre: slot3: WRTCOUNT=1
 	ldy		#4
 	lda		(CardBase),y	; Saturn: 16K bank 0
+	ldy		#3
+	lda		(CardBase),y	; Saturn: RAM read, write enable, 4K bank 2 - only a single access req'd
+							; slot3: WRTCOUNT=2
 
 	lda		CardBaseL		; slot3:$B0
 	cmp		$D000
@@ -319,8 +344,11 @@ Test3
 ; For each of slot3 Saturn's 16K banks (ie. all 8):
 ; . slot0 card is active (RAM enabled & write protected)
 ; . check we can read RAM, but can't write RAM
+; . slot0 card is inactive (ROM enabled)
 ; . switch to slot3 Saturn 16K bank N, selecting: RAM enabled & write enabled & 4K bank 2
 ; . check we can r/w RAM
+
+	jsr		ResetAllLCs
 
 	ldx		#SLOT3
 	jsr		SetCardBaseForSlot
@@ -330,7 +358,11 @@ Test3
 	lda		CardBaseL			; slot3:$B0
 	sta		saturnFillValue
 
-@loop	lda		$C080			; LC: Read RAM, no write (bank 2)
+
+@loop	ldy		#2
+		lda		(CardBase),y	; Saturn: Read ROM, write protect (so not driving bus on a read)
+
+		lda		$C080			; slot0: Read RAM, write protect (bank 2)
 
 		; check: slot0 RAM is r/o
 		lda		#$80			; slot0:$80
@@ -339,6 +371,8 @@ Test3
 		inc		$D000
 		cmp		$D000
 		bne		@error
+
+		lda		$C082			; slot0: Read ROM, write protect (so not driving bus on a read)
 
 		ldy		saturnBankReg
 		lda		(CardBase),y
@@ -383,8 +417,11 @@ Test4
 ; For each of slot3 Saturn's 16K banks (ie. all 8):
 ; . slot3 card is active (RAM enabled & write protected, bank N)
 ; . check we can read RAM, but can't write RAM
+; . slot3 card is inactive (ROM enabled)
 ; . switch to slot0 LC/Saturn 16K bank 0, selecting: RAM enabled & write enabled & 4K bank 2
 ; . check we can r/w RAM
+
+	jsr		ResetAllLCs
 
 	ldx		#SLOT3
 	jsr		SetCardBaseForSlot
@@ -394,10 +431,12 @@ Test4
 	lda		CardBaseL			; slot3:$B0
 	sta		saturnFillValue
 
-@loop	ldy		saturnBankReg
+@loop	lda		$C082			; slot0: Read ROM, write protect (so not driving bus on a read)
+
+		ldy		saturnBankReg
 		lda		(CardBase),y
 		ldy		#0
-		lda		(CardBase),y	; Saturn: Read RAM, no write (bank 2)
+		lda		(CardBase),y	; Saturn: Read RAM, write protect (bank 2)
 
 		; check: slot3 RAM is r/o
 		lda		saturnFillValue
@@ -406,6 +445,9 @@ Test4
 		inc		$D000
 		cmp		$D000
 		bne		@error
+
+		ldy		#2
+		lda		(CardBase),y	; Saturn: Read ROM, write protect (so not driving bus on a read)
 
 		lda		$C083			; LC/Saturn: RAM read, Write enabled (bank 2)
 		lda		$C083
@@ -442,6 +484,12 @@ Test4
 
 ;------------------
 
+ResetAllLCs
+	lda		$C082	; Read ROM; no write
+	lda		$C0B2	; Read ROM; no write
+	rts
+
+;------------------
 
 FillLC
 
