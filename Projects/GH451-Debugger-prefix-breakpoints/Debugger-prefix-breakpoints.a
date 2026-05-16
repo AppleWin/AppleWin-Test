@@ -104,7 +104,7 @@ zpPtrH = $ff
 !zone code
 
 entrypoint
-	lda		#1
+	lda		#1		; User can manually disable use of card with: "6001:0"
 	sta		cardDetected
 
 	lda		$fa
@@ -127,7 +127,7 @@ entrypoint
 	lda		#>MyISR
 	sta		IRQH
 
-	lda		cardDetected	; User can manually disable use of card with: "6001:0"
+	lda		cardDetected
 	beq		+
 		ldy		#BPCARD_REG_ID4
 -			tya
@@ -154,6 +154,8 @@ entrypoint
 ;	bit		BPCARD_CMD_INTERCEPT_BY_CARD	; Not yet - otherwise can't single-step
 
 	cli
+
+	bit		$c0b2		; Disable the s3/Saturn: ROM read, RAM write protected
 
 ;
 ; *** DMA tests ***
@@ -579,6 +581,8 @@ test0
 	sta		SW_ALTZPON	; ENA: ALTZP & LC
 	sta		$d100		; [hit]
 	sta		SW_ALTZPOFF	; DIS: ALTZP & LC
+	bit		$c089		; Read ROM; write RAM; use $D000 bank 1
+	sta		$d100		; [hit]
 	bit		$c088		; Read RAM; protected RAM, bank 1
 	sta		$d100		; [hit] - because "bpm" is r/w ("l1" => RAM, whether protected or not) - use "bpmw" instead if you want to ignore this [*1]
 	bit		$c08a		; Read ROM; protected RAM, bank 1
@@ -947,17 +951,28 @@ MyISR
 
 @ok
 	; Save ZP & LC state
-	lda		_6502_INTERRUPT_VECTOR_H
-	pha
-	eor		#$ff
-	sta		_6502_INTERRUPT_VECTOR_H
 
-	bit		RDLCRAM			; b7: LC 1=RAM, 0=ROM
+	bit		RDLCRAM			; b7: LC 1=RAM, 0=ROM (for read)
 	php
 	bit		RDLCBNK2		; b7: LC 1=bank2, 0=bank1
 	php
 	lda		RDALTZP			; b7: 1=ALTZPON, 0=ALTZPOFF
 	sta		saveAltZP
+
+	; Determine if RAM is write enabled or protected
+	; . NB. can have this asymmetric LC config: Rd ROM / Wr RAM
+	bit		RDLCRAM			; b7: LC 1=RAM, 0=ROM (for read)
+	bmi		+
+		bit		$C083		; LC: RAM read, WRTCOUNT++ (No good if WRTCOUNT already = 1)
++	lda		_6502_INTERRUPT_VECTOR_H
+	inc		_6502_INTERRUPT_VECTOR_H
+	cmp		_6502_INTERRUPT_VECTOR_H
+	beq		+
+		lda		#0			; 0 => write enabled
+		beq		++
++		lda		#1			; 1 => write protect
+++	sta		saveRAMWriteProtect
+	dec		_6502_INTERRUPT_VECTOR_H
 
 	;
 
@@ -995,12 +1010,15 @@ MyISR
 	bmi		+
 	sta		$C082,y			; ROM read, write protect
 
-+	pla
-	cmp		_6502_INTERRUPT_VECTOR_H
-	beq		+
-	ldx		$C083,y			; (Must be CPU read)
-	ldx		$C083,y			; RAM write enabled
-	sta		_6502_INTERRUPT_VECTOR_H
++	lda		saveRAMWriteProtect	; RAM: 0=>Write enabled, 1=>Write protect
+	bne		+
+		bit		RDLCRAM			; b7: LC 1=RAM, 0=ROM
+		bmi		++
+			ldx		$C081,y
+			ldx		$C081,y		; ROM read, RAM write enabled
+			jmp		+
+++			ldx		$C083,y		; (Must be CPU read)
+			ldx		$C083,y		; RAM read, RAM write enabled
 +
 
 	inc		subTestNum
@@ -1008,6 +1026,7 @@ MyISR
 	+ISR_EXIT
 
 saveAltZP	!byte 0
+saveRAMWriteProtect	!byte 0
 
 ;------------------------------------------------------------------------------
 
@@ -1194,7 +1213,8 @@ BP_MEM_PARAM_SIZE = 5
 	!byte	BPACCESS_RW
 }
 
-cpu_mem_breakpoints			; test: 02:[00-1A]
+cpu_mem_breakpoints			; test: 02:[00-1B]
+	+MEM_BP_PARAMS_RW $d100
 	+MEM_BP_PARAMS_RW $d100
 	+MEM_BP_PARAMS_RW $d100
 	+MEM_BP_PARAMS_RW $d100
