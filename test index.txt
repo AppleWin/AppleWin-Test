@@ -113,7 +113,7 @@ Pravets8A.aws.yaml
 Pravets8M.aws.yaml
 . Pravets8M
 
-SKM (Shift Key Mod)
+Shift Key Mod test, and with joysticks unplugged to verify input switches float high (GH#1234)
 . skm-apple2p.aws
 . skm-apple2ee.aws
 
