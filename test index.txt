@@ -113,6 +113,10 @@ Pravets8A.aws.yaml
 Pravets8M.aws.yaml
 . Pravets8M
 
+SKM (Shift Key Mod)
+. skm-apple2p.aws
+. skm-apple2ee.aws
+
 TK3000e.aws.yaml
 . TK3000 //e
 

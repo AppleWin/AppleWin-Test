@@ -19,6 +19,8 @@ CALL "v2\Mockingboard\test.bat" %1 %2
 CALL "v2\CmdLineSwitches\test.bat" %1 %2
 CALL "v2\Video ROM\test.bat" %1 %2
 CALL "v2\VidHD\test.bat" %1 %2
+%1\applewin%2 -log -load-state "%~dp0\skm-apple2p.aws.yaml"
+%1\applewin%2 -log -load-state "%~dp0\skm-apple2ee.aws.yaml"
 %1\applewin%2 -log -load-state "%~dp0\Buttons_KeyData_AnyKeyDown-Test.aws.yaml" -alt-enter=open-apple-enter
 %1\applewin%2 -log -load-state "%~dp0\4Play-slot4.aws.yaml"
 %1\applewin%2 -log -load-state "%~dp0\SNES_MAX-slot4.aws.yaml"
